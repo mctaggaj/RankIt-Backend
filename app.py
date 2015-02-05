@@ -6,11 +6,11 @@ from sqlalchemy.ext.declarative import declarative_base
 #Base = declarative_base()
 #Base.metadata.reflect(engine)
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="", static_folder="package")
 
 @app.route('/')
 def index():
-    return "Yo, this is the root URI, it doesn't do anything other than show you this message!"
+    return app.send_static_file('index.html')
 
 @app.route('/users')
 def cook_rating():
