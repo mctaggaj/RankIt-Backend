@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 #Base = declarative_base()
 #Base.metadata.reflect(engine)
 
-competition1 = {
+comp = [{
 "competitionId": "c1",
 "name": "Mario Cup",
 "subject": "Mario Cart",
@@ -319,7 +319,7 @@ competition1 = {
           "parentCompetition": "c1"
   }
 ]
-}
+}]
 
 app = Flask(__name__, static_url_path="", static_folder="package")
 
@@ -332,7 +332,11 @@ def competition(competition_id):
     if request.method == 'PUT':
         return "Not yet implemented"
     elif request.method == 'GET':
-        return jsonify({'competition': competition1})
+        return jsonify({'competition': comp[0]})
+
+@app.route('/competitions')
+def all_competitions():
+    return jsonify({'competitions':comp})
 
 @app.route('/users')
 def cook_rating():
