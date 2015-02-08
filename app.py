@@ -327,18 +327,18 @@ app = Flask(__name__, static_url_path="", static_folder="package")
 def index():
     return app.send_static_file('index.html')
 
-@app.route('/competitions/<competition_id>', methods=['GET', 'PUT'])
+@app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
 def competition(competition_id):
     if request.method == 'PUT':
         return "Not yet implemented"
     elif request.method == 'GET':
         return jsonify({'competition': comp[0]})
 
-@app.route('/competitions')
+@app.route('/api/competitions')
 def all_competitions():
     return jsonify({'competitions':comp})
 
-@app.route('/users')
+@app.route('/api/users')
 def cook_rating():
     return "Hey look, this is a GET request for users."
 
