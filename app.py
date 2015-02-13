@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+import json
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -321,6 +322,11 @@ comp = [{
 ]
 }]
 
+users = [{"userName" : "mctaggaj",
+        "userId" : 1,
+        "password" : "smellslikesoup"
+        }]
+
 app = Flask(__name__, static_url_path="", static_folder="package")
 
 @app.route('/')
@@ -332,15 +338,26 @@ def competition(competition_id):
     if request.method == 'PUT':
         return "Not yet implemented"
     elif request.method == 'GET':
-        return jsonify({'competition': comp[0]})
+        return jsonify({'competition': comp[0], "status" : "OK"})
 
 @app.route('/api/competitions')
 def all_competitions():
-    return jsonify({'competitions':comp})
+    return jsonify({'competitions':comp, "status" : "OK"})
 
 @app.route('/api/users')
 def cook_rating():
     return "Hey look, this is a GET request for users."
+
+@app.route('/api/authentication', methods=['POST'])
+def authenticate():
+    user1 = request.json
+    for user in users:
+        if user['userName'] == user1['userName']:
+            if 'token' not in user:
+                user['token'] = "asdf"
+            uj = {'userName':user['userName'], "userId":user['userId'], 'token':user['token']}
+            return jsonify({'auth': uj, 'status' : 'OK'})
+    return jsonify({'status': 'NoUser', 'description':'This user was not found in the database.'})
 
 if __name__ == '__main__':
     app.run(debug=True)
