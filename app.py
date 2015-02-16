@@ -338,7 +338,10 @@ def competition(competition_id):
     if request.method == 'PUT':
         return "Not yet implemented"
     elif request.method == 'GET':
-        return jsonify({'competition': comp[0], "status" : "OK"})
+        for competition in comp:
+            if competition['competitionId'] == competition_id:
+                return jsonify({'competition': competition, 'status': 'OK'})
+        return jsonify({'status': 'NoCompetition', 'description': 'Competition ID was not found.'})
 
 @app.route('/api/competitions')
 def all_competitions():
