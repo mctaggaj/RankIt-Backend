@@ -341,11 +341,17 @@ def competition(competition_id):
         for competition in comp:
             if competition['competitionId'] == competition_id:
                 return jsonify({'competition': competition, 'status': 'OK'})
-        return jsonify({'status': 'NoCompetition', 'description': 'Competition ID was not found.'})
+        return jsonify({'status': 'NoCompetition', 'description': 'Competition ID was not found.'}), 404
 
-@app.route('/api/competitions')
+@app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
-    return jsonify({'competitions':comp, "status" : "OK"})
+    if request.method == 'GET':
+        return jsonify({'competitions':comp, "status" : "OK"})
+    elif request.method == 'POST':
+        new_comp = request.json
+        print new_comp
+        return jsonify({'status': 'OK'})
+
 
 @app.route('/api/users')
 def cook_rating():
@@ -360,7 +366,7 @@ def authenticate():
                 user['token'] = "asdf"
             uj = {'userName':user['userName'], "userId":user['userId'], 'token':user['token']}
             return jsonify({'auth': uj, 'status' : 'OK'})
-    return jsonify({'status': 'NoUser', 'description':'This user was not found in the database.'})
+    return jsonify({'status': 'NoUser', 'description':'This user was not found in the database.'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
