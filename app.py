@@ -349,13 +349,20 @@ def all_competitions():
         return jsonify({'competitions':comp, "status" : "OK"})
     elif request.method == 'POST':
         new_comp = request.json
-        print new_comp
         return jsonify({'status': 'OK'})
 
 
-@app.route('/api/users')
-def cook_rating():
-    return "Hey look, this is a GET request for users."
+@app.route('/api/users', methods=['POST'])
+def users_response():
+    new_user = request.json
+    for user in users:
+        if user['userName'] == new_user['userName']:
+            return jsonify({'status':'UserExists', 'description':'Username already exists.'})
+    nextID = users[-1]['userId']+1
+    new_user['userId'] = nextID
+    users.append(new_user)
+    return jsonify({'status':'OK'})
+
 
 @app.route('/api/authentication', methods=['POST'])
 def authenticate():
