@@ -322,7 +322,7 @@ comp = [{
 ]
 }]
 
-users = [{"userName" : "mctaggaj",
+users = [{"userName" : "mctaggaj@mail.uoguelph.ca",
         "userId" : 1,
         "password" : "smellslikesoup"
         }]
