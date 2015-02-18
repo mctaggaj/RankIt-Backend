@@ -368,12 +368,12 @@ def users_response():
 def authenticate():
     user1 = request.json
     for user in users:
-        if user['userName'] == user1['userName']:
+        if user['userName'] == user1['userName'] and user['password'] == user1['password']:
             if 'token' not in user:
                 user['token'] = "asdf"
             uj = {'userName':user['userName'], "userId":user['userId'], 'token':user['token']}
             return jsonify({'auth': uj, 'status' : 'OK'})
-    return jsonify({'status': 'NoUser', 'description':'This user was not found in the database.'}), 404
+    return jsonify({'status': 'NoUser', 'description':'This user was not found in the database.'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
