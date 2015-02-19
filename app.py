@@ -349,7 +349,7 @@ def competition(competition_id):
     if request.method == 'PUT':
         return "Not yet implemented"
     elif request.method == 'GET':
-        for competition in comp:
+        for competition in comps:
             if competition['competitionId'] == competition_id:
                 return jsonify({'competition': competition, 'status': 'OK'})
         return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
@@ -364,7 +364,7 @@ def all_competitions():
             return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'})
         if 'name' not in new_comp:
             return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'})
-        new_comp['competitionId'] = comp[-1]['competitionId']+1
+        new_comp['competitionId'] = comps[-1]['competitionId']+1
         comp.append(new_comp)
         return jsonify(new_comp),201
 
