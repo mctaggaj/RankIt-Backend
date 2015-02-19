@@ -358,7 +358,7 @@ def competition(competition_id):
 def all_competitions():
     if request.method == 'GET':
         return jsonify(comps), 200
-    elif request.method == 'POST': # todo, doesnt currently create
+    elif request.method == 'POST': 
         new_comp = request.json
         if 'competitionId' in new_comp:
             return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'})
