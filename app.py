@@ -8,8 +8,8 @@ from sqlalchemy.ext.declarative import declarative_base
 #Base = declarative_base()
 #Base.metadata.reflect(engine)
 
-comps = { 'competitions': [{
-"competitionId": "1",
+comps = [{
+"competitionId": 1,
 "name": "Mario Cup",
 "subject": "Mario Cart",
 "description": "May the best nerd win",
@@ -321,7 +321,7 @@ comps = { 'competitions': [{
           "parentCompetition": "c1"
   }
 ]
-}]};
+}]
 
 users = {'users': [
         {"userName" : "mctaggaj@mail.uoguelph.ca",
@@ -357,7 +357,7 @@ def competition(competition_id):
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
     if request.method == 'GET':
-        return jsonify(comps), 200
+        return jsonify({'competitions':comps}), 200
     elif request.method == 'POST': 
         new_comp = request.json
         if 'competitionId' in new_comp:
@@ -365,7 +365,7 @@ def all_competitions():
         if 'name' not in new_comp:
             return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'})
         new_comp['competitionId'] = comps[-1]['competitionId']+1
-        comp.append(new_comp)
+        comps.append(new_comp)
         return jsonify(new_comp),201
 
 
