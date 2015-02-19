@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 import json
+import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -7,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 #Base = declarative_base()
 #Base.metadata.reflect(engine)
 
-comp = [{
+comps = { 'competitions': [{
 "competitionId": "c1",
 "name": "Mario Cup",
 "subject": "Mario Cart",
@@ -320,14 +321,24 @@ comp = [{
           "parentCompetition": "c1"
   }
 ]
-}]
+}]};
 
-users = [{"userName" : "mctaggaj@mail.uoguelph.ca",
-        "userId" : 1,
-        "password" : "smellslikesoup"
-        }]
+users = {'users': [
+        {"userName" : "mctaggaj@mail.uoguelph.ca",
+         "userId" : 1,
+         "password" : "smellslikesoup"
+        },
+        {"userName" : "test@test.ca",
+         "userId" : 2,
+         "password" : "abc123"
+        }
+        ]}
 
 app = Flask(__name__, static_url_path="", static_folder="package")
+
+def generateToken():
+    return uuid.uuid4().hex
+
 
 @app.route('/')
 def index():
@@ -341,39 +352,42 @@ def competition(competition_id):
         for competition in comp:
             if competition['competitionId'] == competition_id:
                 return jsonify({'competition': competition, 'status': 'OK'})
-        return jsonify({'status': 'NoCompetition', 'description': 'Competition ID was not found.'}), 404
+        return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
 
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
     if request.method == 'GET':
-        return jsonify({'competitions':comp, "status" : "OK"})
-    elif request.method == 'POST':
+        return jsonify(comps), 200
+    elif request.method == 'POST': # todo, doesnt currently create
         new_comp = request.json
-        return jsonify({'status': 'OK'})
+        return jsonify(new_comp), 201
 
 
 @app.route('/api/users', methods=['POST'])
 def users_response():
-    new_user = request.json
+    data = request.json
+    new_user['userName'] = data['userName'] # safety from the unknown object being sent
+    new_user['password'] = data['password']
     for user in users:
         if user['userName'] == new_user['userName']:
-            return jsonify({'status':'UserExists', 'description':'Username already exists.'})
+            return jsonify({'status':'UserExists', 'msg':'Username already exists.'}), 400
     nextID = users[-1]['userId']+1
     new_user['userId'] = nextID
+    new_user['token'] = generateToken()
     users.append(new_user)
-    return jsonify({'status':'OK'})
+    return jsonify(new_user), 201
 
 
 @app.route('/api/authentication', methods=['POST'])
 def authenticate():
     user1 = request.json
-    for user in users:
+    for user in users['users']:
         if user['userName'] == user1['userName'] and user['password'] == user1['password']:
             if 'token' not in user:
-                user['token'] = "asdf"
-            uj = {'userName':user['userName'], "userId":user['userId'], 'token':user['token']}
-            return jsonify({'auth': uj, 'status' : 'OK'})
-    return jsonify({'status': 'NoUser', 'description':'This user was not found in the database.'}), 400
+                user['token'] = generateToken()
+            # uj = {'userName':user['userName'], "userId":user['userId'], 'token':user['token']}
+            return jsonify(user), 200
+    return jsonify({'status': 'NoUser', 'msg':'This user was not found in the database.'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
