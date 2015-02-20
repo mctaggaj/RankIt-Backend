@@ -354,6 +354,22 @@ def events(competition_id, stage_id):
                     if stage['stageId'] == int(stage_id):
                         return jsonify({'events':stage['events']})
         return jsonify({'msg':'Competition or stage ID was not found'}), 404    
+    elif request.method == 'POST':
+        new_event = request.json
+        if 'eventId' in new_event:
+            return jsonify({'status':'InvalidField', 'msg':'Event Id cannot be provided in new stage.'}),400
+        for comp in comps:
+            if comp['competitionId'] == int(competition_id):
+                for stage in comp['stages']:
+                    if stage['stageId'] == int(stage_id):
+                        if len(stage['events']) is 0:
+                            new_event['eventId'] = 0
+                        else:
+                            new_event['eventId'] = stage['events'][-1]['eventId'] +1
+                        stage['events'].append(new_event)
+                        return jsonify(new_event)
+        return jsonify({'msg':'Competition or stage ID not found'}), 404        
+
 
 @app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
 def competition(competition_id):
