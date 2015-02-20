@@ -132,7 +132,7 @@ comps = [{
         1,
         3
       ],
-      "event": [
+      "events": [
         {
           "eventId": 0,
           "name": "Race 1",
@@ -272,7 +272,7 @@ comps = [{
         }
       ],
       "results": [],
-      "event": [
+      "events": [
         {
           "eventId": 2,
           "name": "Fianl Race",
@@ -345,6 +345,16 @@ def generateToken():
 def index():
     return app.send_static_file('index.html')
 
+@app.route('/api/competitions/<competition_id>/stages/<stage_id>/events', methods=['GET', 'POST'])
+def events(competition_id, stage_id):
+    if request.method == 'GET':
+        for comp in comps:
+            if comp['competitionId'] == int(competition_id):
+                for stage in comp['stages']:
+                    if stage['stageId'] == int(stage_id):
+                        return jsonify({'events':stage['events']})
+        return jsonify({'msg':'Competition or stage ID was not found'}), 404    
+
 @app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
 def competition(competition_id):
     if request.method == 'PUT':
@@ -371,6 +381,8 @@ def stages(competition_id):
                     new_stage['stageId'] = 0
                 else:
                     new_stage['stageId'] = comp['stages'][-1]['stageId'] + 1
+                if 'events' not in new_stage:
+                    new_stage['events'] = []
                 comp['stages'].append(new_stage)
                 return jsonify(new_stage), 200
 
