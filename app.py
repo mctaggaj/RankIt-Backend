@@ -335,6 +335,8 @@ users = {'users': [
         }
         ]}
 
+sessions = {}
+
 app = Flask(__name__, static_url_path="", static_folder="package")
 
 def generateToken():
@@ -367,7 +369,7 @@ def events(competition_id, stage_id):
                         else:
                             new_event['eventId'] = stage['events'][-1]['eventId'] +1
                         stage['events'].append(new_event)
-                        return jsonify(new_event)
+                        return jsonify(new_event), 201
         return jsonify({'msg':'Competition or stage ID not found'}), 404        
 
 
@@ -400,7 +402,7 @@ def stages(competition_id):
                 if 'events' not in new_stage:
                     new_stage['events'] = []
                 comp['stages'].append(new_stage)
-                return jsonify(new_stage), 200
+                return jsonify(new_stage), 201
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 
@@ -449,15 +451,20 @@ def users_response():
     return jsonify(new_user), 201
 
 
-@app.route('/api/authentication', methods=['POST'])
+@app.route('/api/authentication', methods=['POST', 'DELETE'])
 def authenticate():
-    user1 = request.json
-    for user in users['users']:
-        if user['userName'] == user1['userName'] and user['password'] == user1['password']:
-            if 'token' not in user:
-                user['token'] = generateToken()
-            return jsonify(user), 200
-    return jsonify({'status': 'NoUser', 'msg':'This user was not found in the database.'}), 404
+    if request.method == 'POST':
+        user1 = request.json
+        for user in users['users']:
+            if user['userName'] == user1['userName'] and user['password'] == user1['password']:
+                token = generateToken()
+                sessions[token] = user['userId']
+                return jsonify({"userId":user['userId'], 'token':token}), 200
+        return jsonify({'status': 'AuthFailure', 'msg':'Authentication failed.'}),404
+    elif request.method == 'DELETE':
+        token = request.headers.get('X-Token')
+        del sessions[token]
+        return jsonify({'msg':'Deauthenticated'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
