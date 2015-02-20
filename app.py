@@ -361,7 +361,20 @@ def stages(competition_id):
         for comp in comps:
             if comp['competitionId'] == int(competition_id):
                 return jsonify({'stages':comp['stages']})
-        return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
+    elif request.method == 'POST':
+        new_stage = request.json
+        if 'stageId' in new_stage:
+            return jsonify({'status':'InvalidField', 'msg':'Stage ID cannot be provided in new stage.'}),400
+        for comp in comps:
+            if comp['competitionId'] == int(competition_id):
+                if len(comp['stages']) is 0:
+                    new_stage['stageId'] = 0
+                else:
+                    new_stage['stageId'] = comp['stages'][-1]['stageId'] + 1
+                comp['stages'].append(new_stage)
+                return jsonify(new_stage), 200
+
+    return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
@@ -369,10 +382,12 @@ def all_competitions():
         return jsonify({'competitions':comps}), 200
     elif request.method == 'POST': 
         new_comp = request.json
+        if 'stages' not in new_comp:
+            new_comp['stages'] = []
         if 'competitionId' in new_comp:
-            return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'})
+            return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'}), 400
         if 'name' not in new_comp:
-            return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'})
+            return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'}), 400
         new_comp['competitionId'] = comps[-1]['competitionId']+1
         comps.append(new_comp)
         return jsonify(new_comp),201
