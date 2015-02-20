@@ -387,7 +387,7 @@ def single_stage(competition_id, stage_id):
         return jsonify({'msg':'Stage or competition resource not found'}), 404
                     
     else:
-        return 501
+        return "Not yet implemented", 501
 
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
