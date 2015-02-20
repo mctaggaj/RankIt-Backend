@@ -9,318 +9,319 @@ from sqlalchemy.ext.declarative import declarative_base
 #Base.metadata.reflect(engine)
 
 comps = [{
-"competitionId": 1,
-"name": "Mario Cup",
-"subject": "Mario Cart",
-"description": "May the best nerd win",
-"location": "Jason's House",
-"public": True,
-"results": "[]",
-"state": "In Progress",
-"participants": [
+  "competitionId": 0,
+  "name": "Mario Cup",
+  "subject": "Mario Cart",
+  "description": "May the best nerd win",
+  "location": "Jason's House",
+  "public": True,
+  "results": [],
+  "state": "In Progress",
+  "participants": [
     {
-        "userId": "user1",
-        "competitionId": "c1",
-        "compRoleId": "c1r1",
-        "rank": 1,
-        "permissions": {
+      "userId": 0,
+      "competitionId": 0,
+      "compRoleId": 0,
+      "rank": 1,
+      "permissions": {
+        "permId": 0,
+        "admin": False,
+        "judge": False,
+        "competitor": True
+      }
+    },
+    {
+      "userId": 1,
+      "competitionId": 0,
+      "compRoleId": 1,
+      "rank": 2,
+      "permissions": {
+        "admin": False,
+        "judge": False,
+        "competitor": True
+      }
+    },
+    {
+      "userId": 2,
+      "competitionId": 0,
+      "compRoleId": 2,
+      "rank": 3,
+      "permissions": {
+        "admin": False,
+        "judge": False,
+        "competitor": True
+      }
+    },
+    {
+      "userId": 3,
+      "competitionId": 0,
+      "compRoleId": 3,
+      "rank": 4,
+      "permissions": {
+        "admin": True,
+        "judge": True,
+        "competitor": True
+      }
+    }
+  ],
+  "streamURL": "",
+  "stages": [
+    {
+      "stageId": 0,
+      "competitionId": 0,
+      "name": "Semi Finals",
+      "description": "Elimination Round",
+      "nextStage": 1,
+      "location": "Mario Circut",
+      "state": "Completed",
+      "seed": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "participants": [
+        {
+          "userId": 0,
+          "stageId": 0,
+          "stageRoleId": 0,
+          "rank": 1,
+          "permissions": {
             "admin": False,
             "judge": False,
             "competitor": True
-            }
+          }
         },
-    {
-        "userId": "user2",
-        "competitionId": "c1",
-        "compRoleId": "c1r2",
-        "rank": 2,
-        "permissions": {
+        {
+          "userId": 1,
+          "stageId": 0,
+          "stageRoleId": 1,
+          "rank": 2,
+          "permissions": {
             "admin": False,
             "judge": False,
             "competitor": True
-            }
+          }
         },
-    {
-        "userId": "user3",
-        "competitionId": "c1",
-        "compRoleId": "c1r3",
-        "rank": 3,
-        "permissions": {
+        {
+          "userId": 2,
+          "stageId": 0,
+          "stageRoleId": 2,
+          "rank": 3,
+          "permissions": {
             "admin": False,
             "judge": False,
             "competitor": True
-            }
+          }
         },
-    {
-        "userId": "user4",
-        "competitionId": "c1",
-        "compRoleId": "c1r4",
-        "rank": 4,
-        "permissions": {
+        {
+          "userId": 3,
+          "stageId": 0,
+          "stageRoleId": 3,
+          "rank": 4,
+          "permissions": {
             "admin": True,
             "judge": True,
             "competitor": True
-            }
+          }
         }
-    ],
-"streamURL": "",
-"stages": [
+      ],
+      "results": [
+        0,
+        2,
+        1,
+        3
+      ],
+      "event": [
         {
-            "stageId": "c1s1",
-            "name": "Semi Finals",
-            "description": "Elimination Round",
-            "nextStage": "c1s2",
-            "location": "Mario Circut",
-            "state": "Completed",
-            "seed": [
-                1,
-                2,
-                3,
-                4
-                ],
-            "participants": [
-                {
-                    "userId": "user1",
-                    "stageId": "c1s1",
-                    "stageRoleId": "c1s1r1",
-                    "rank": 1,
-                    "permissions": {
-                        "admin": False,
-                        "judge": False,
-                        "competitor": True
-                        }
-                    },
-                {
-                    "userId": "user2",
-                    "stageId": "c1s1",
-                    "stageRoleId": "c1s1r2",
-                    "rank": 2,
-                    "permissions": {
-                        "admin": False,
-                        "judge": False,
-                        "competitor": True
-                        }
-                    },
-                {
-                    "userId": "user3",
-                    "stageId": "c1s1",
-                    "stageRoleId": "c1s1r3",
-                    "rank": 3,
-                    "permissions": {
-                        "admin": False,
-                        "judge": False,
-                        "competitor": True
-                        }
-                    },
-                {
-                    "userId": "user4",
-                    "stageId": "c1s1",
-                    "stageRoleId": "c1s1r4",
-                    "rank": 4,
-                    "permissions": {
-                        "admin": True,
-                        "judge": True,
-                        "competitor": True
-                        }
-                    }
-                ],
-            "results": [
-                    "user1",
-                    "user3",
-                    "user2",
-                    "user4"
-                    ],
-            "event": [
-                    {
-                        "eventId": "c1s1e1",
-                        "name": "Race 1",
-                        "location": "Mario Circut",
-                        "parentStage": "c1s1",
-                        "state": "Completed",
-                        "results": [
-                            "user1",
-                            "user4"
-                            ],
-                        "seed": [
-                            1,
-                            4
-                            ],
-                        "participants": [
-                            {
-                                "userId": "user1",
-                                "eventId": "c1s1e1",
-                                "eventRoleId": "c1s1e1r1",
-                                "rank": 1,
-                                "permissions": {
-                                    "admin": False,
-                                    "judge": False,
-                                    "competitor": True
-                                    }
-                                },
-                            {
-                                "userId": "user4",
-                                "eventId": "c1s1e1",
-                                "eventRoleId": "c1s1e1r2",
-                                "rank": 4,
-                                "permissions": {
-                                    "admin": True,
-                                    "judge": True,
-                                    "competitor": True
-                                    }
-                                }
-                            ]
-                        },
-                    {
-                        "eventId": "c1s1e2",
-                        "name": "Race 1",
-                        "location": "Mario Circut",
-                        "parentStage": "c1s1",
-                        "state": "Completed",
-                        "results": [
-                            "user3",
-                            "user2"
-                            ],
-                        "seed": [
-                            2,
-                            3
-                            ],
-                        "participants": [
-                            {
-                                "userId": "user2",
-                                "eventId": "c1s1e2",
-                                "eventRoleId": "c1s1e2r1",
-                                "rank": 2,
-                                "permissions": {
-                                    "admin": False,
-                                    "judge": False,
-                                    "competitor": True
-                                    }
-                                },
-                            {
-                                "userId": "user3",
-                                "eventId": "c1s1e3",
-                                "eventRoleId": "c1s1e2r2",
-                                "rank": 3,
-                                "permissions": {
-                                    "admin": False,
-                                    "judge": False,
-                                    "competitor": True
-                                    }
-                                },
-                            {
-                                "userId": "user4",
-                                "eventId": "c1s1e2",
-                                "eventRoleId": "c1s1e2r3",
-                                "rank": -1,
-                                "permissions": {
-                                    "admin": True,
-                                    "judge": True,
-                                    "competitor": False
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-    "parentCompetition": "c1"
-  },
-  {
-          "stageId": "c1s2",
-          "name": "Finals",
-          "description": "Winner takes the cup",
-          "previousStage": "c1s1",
+          "eventId": 0,
+          "name": "Race 1",
           "location": "Mario Circut",
+          "stageId": 0,
+          "state": "Completed",
+          "results": [
+            "user1",
+            "user4"
+          ],
+          "seed": [
+            1,
+            4
+          ],
+          "participants": [
+            {
+              "userId": 0,
+              "eventId": 0,
+              "eventRoleId": 0,
+              "rank": 1,
+              "permissions": {
+                "admin": False,
+                "judge": False,
+                "competitor": True
+              }
+            },
+            {
+              "userId": 3,
+              "eventId": 0,
+              "eventRoleId": 1,
+              "rank": 4,
+              "permissions": {
+                "admin": True,
+                "judge": True,
+                "competitor": True
+              }
+            }
+          ]
+        },
+        {
+          "eventId": 1,
+          "name": "Race 1",
+          "location": "Mario Circut",
+          "stageId": 0,
+          "state": "Completed",
+          "results": [ 
+            2,
+            1
+          ],
+          "seed": [
+            2,
+            3
+          ],
+          "participants": [
+            {
+              "userId": 1,
+              "eventId": 1,
+              "eventRoleId": 2,
+              "rank": 2,
+              "permissions": {
+                "admin": False,
+                "judge": False,
+                "competitor": True
+              }
+            },
+            {
+              "userId": 2,
+              "eventId": 1,
+              "eventRoleId": 3,
+              "rank": 3,
+              "permissions": {
+                "admin": False,
+                "judge": False,
+                "competitor": True
+              }
+            },
+            {
+              "userId": 3,
+              "eventId": 1,
+              "eventRoleId": 4,
+              "rank": -1,
+              "permissions": {
+                "admin": True,
+                "judge": True,
+                "competitor": False
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stageId": 1,
+      "competitionId": 0,
+      "name": "Finals",
+      "description": "Winner takes the cup",
+      "previousStage": 0,
+      "location": "Mario Circut",
+      "state": "In Progress",
+      "seed": [
+        1,
+        2
+      ],
+      "participants": [
+        {
+          "userId": 0,
+          "stageId": 1,
+          "stageRoleId": 4,
+          "rank": 1,
+          "permissions": {
+            "admin": False,
+            "judge": False,
+            "competitor": True
+          }
+        },
+        {
+          "userId": 2,
+          "stageId": 1,
+          "stageRoleId": 5,
+          "rank": 2,
+          "permissions": {
+            "admin": False,
+            "judge": False,
+            "competitor": True
+          }
+        },
+        {
+          "userId": 3,
+          "stageId": 1,
+          "stageRoleId": 6,
+          "rank": -1,
+          "permissions": {
+            "admin": True,
+            "judge": True,
+            "competitor": False
+          }
+        }
+      ],
+      "results": [],
+      "event": [
+        {
+          "eventId": 2,
+          "name": "Fianl Race",
+          "location": "Mario Circut",
+          "stageId": 1,
           "state": "In Progress",
           "seed": [
-              1,
-              2
-              ],
+            1,
+            4
+          ],
           "participants": [
-              {
-                  "userId": "user1",
-                  "stageId": "c1s2",
-                  "stageRoleId": "c1s2r1",
-                  "rank": 1,
-                  "permissions": {
-                      "admin": False,
-                      "judge": False,
-                      "competitor": True
-                      }
-                  },
-              {
-                  "userId": "user3",
-                  "stageId": "c1s2",
-                  "stageRoleId": "c1s2r2",
-                  "rank": 2,
-                  "permissions": {
-                      "admin": False,
-                      "judge": False,
-                      "competitor": True
-                      }
-                  },
-              {
-                  "userId": "user4",
-                  "stageId": "c1s2",
-                  "stageRoleId": "c1s2r3",
-                  "rank": -1,
-                  "permissions": {
-                      "admin": True,
-                      "judge": True,
-                      "competitor": False
-                      }
-                  }
-              ],
-          "results": [],
-          "event": [
-              {
-                  "eventId": "c1s2e1",
-                  "name": "Fianl Race",
-                  "location": "Mario Circut",
-                  "parentStage": "c1s2",
-                  "state": "In Progress",
-                  "seed": [
-                      1,
-                      4
-                      ],
-                  "participants": [
-                      {
-                          "userId": "user1",
-                          "eventId": "c1s2e1",
-                          "eventRoleId": "c1s2e1r1",
-                          "rank": 1,
-                          "permissions": {
-                              "admin": False,
-                              "judge": False,
-                              "competitor": True
-                              }
-                          },
-                      {
-                          "userId": "user3",
-                          "eventId": "c1s2e1",
-                          "eventRoleId": "c1s2e1r2",
-                          "rank": 2,
-                          "permissions": {
-                              "admin": False,
-                              "judge": False,
-                              "competitor": True
-                              }
-                          },
-                      {
-                          "userId": "user4",
-                          "eventId": "c1s2e1",
-                          "eventRoleId": "c1s2e1r3",
-                          "rank": -1,
-                          "permissions": {
-                              "admin": True,
-                              "judge": True,
-                              "competitor": False
-                              }
-                          }
-                      ]
-                  }
-              ],
-          "parentCompetition": "c1"
-  }
-]
+            {
+              "userId": 0,
+              "eventId": 2,
+              "eventRoleId": 5,
+              "rank": 1,
+              "permissions": {
+                "admin": False,
+                "judge": False,
+                "competitor": True
+              }
+            },
+            {
+              "userId": 2,
+              "eventId": 2,
+              "eventRoleId": 6,
+              "rank": 2,
+              "permissions": {
+                "admin": False,
+                "judge": False,
+                "competitor": True
+              }
+            },
+            {
+              "userId": 3,
+              "eventId": 1,
+              "eventRoleId": 6,
+              "rank": -1,
+              "permissions": {
+                "admin": True,
+                "judge": True,
+                "competitor": False
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }]
 
 users = {'users': [
@@ -350,9 +351,30 @@ def competition(competition_id):
         return "Not yet implemented"
     elif request.method == 'GET':
         for competition in comps:
-            if competition['competitionId'] == competition_id:
+            if competition['competitionId'] == int(competition_id):
                 return jsonify({'competition': competition, 'status': 'OK'})
         return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
+
+@app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
+def stages(competition_id):
+    if request.method == 'GET':
+        for comp in comps:
+            if comp['competitionId'] == int(competition_id):
+                return jsonify({'stages':comp['stages']})
+    elif request.method == 'POST':
+        new_stage = request.json
+        if 'stageId' in new_stage:
+            return jsonify({'status':'InvalidField', 'msg':'Stage ID cannot be provided in new stage.'}),400
+        for comp in comps:
+            if comp['competitionId'] == int(competition_id):
+                if len(comp['stages']) is 0:
+                    new_stage['stageId'] = 0
+                else:
+                    new_stage['stageId'] = comp['stages'][-1]['stageId'] + 1
+                comp['stages'].append(new_stage)
+                return jsonify(new_stage), 200
+
+    return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
@@ -360,10 +382,12 @@ def all_competitions():
         return jsonify({'competitions':comps}), 200
     elif request.method == 'POST': 
         new_comp = request.json
+        if 'stages' not in new_comp:
+            new_comp['stages'] = []
         if 'competitionId' in new_comp:
-            return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'})
+            return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'}), 400
         if 'name' not in new_comp:
-            return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'})
+            return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'}), 400
         new_comp['competitionId'] = comps[-1]['competitionId']+1
         comps.append(new_comp)
         return jsonify(new_comp),201
@@ -391,7 +415,6 @@ def authenticate():
         if user['userName'] == user1['userName'] and user['password'] == user1['password']:
             if 'token' not in user:
                 user['token'] = generateToken()
-            # uj = {'userName':user['userName'], "userId":user['userId'], 'token':user['token']}
             return jsonify(user), 200
     return jsonify({'status': 'NoUser', 'msg':'This user was not found in the database.'}), 404
 
