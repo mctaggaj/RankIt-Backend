@@ -3,10 +3,13 @@ import json
 import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+import database as db
 
 #engine = create_engine('mysql+pymysql://blbadmin:Chickenpotpie1@beerleagueblog.ca/blb')
 #Base = declarative_base()
 #Base.metadata.reflect(engine)
+
+adapter = db.CommunicationAdapter()
 
 comps = [{
   "competitionId": 0,
@@ -438,28 +441,22 @@ def all_competitions():
 
 @app.route('/api/users', methods=['POST'])
 def users_response():
-    data = request.json
-    new_user['userName'] = data['userName'] # safety from the unknown object being sent
-    new_user['password'] = data['password']
-    for user in users:
-        if user['userName'] == new_user['userName']:
-            return jsonify({'status':'UserExists', 'msg':'Username already exists.'}), 400
-    nextID = users[-1]['userId']+1
-    new_user['userId'] = nextID
-    new_user['token'] = generateToken()
-    users.append(new_user)
-    return jsonify(new_user), 201
+    user = adapter.store_user(request)
+    if user is not None:
+        return jsonify(user), 201
+    else:
+        return jsonify({'status':'UserExists', 'msg':'Username already exists in database'})
 
 
 @app.route('/api/authentication', methods=['POST', 'DELETE'])
 def authenticate():
     if request.method == 'POST':
-        user1 = request.json
-        for user in users['users']:
-            if user['userName'] == user1['userName'] and user['password'] == user1['password']:
-                token = generateToken()
-                sessions[token] = user['userId']
-                return jsonify({"userId":user['userId'], 'token':token}), 200
+        user_req = request.json
+        user = adapter.get_user_by_username(user_req['userName'])
+        if user['userName'] == user_req['userName'] and user['password'] == user_req['password']:
+            token = generateToken()
+            sessions[token] = user['userId']
+            return jsonify({"userId":user['userId'], 'token':token}), 200
         return jsonify({'status': 'AuthFailure', 'msg':'Authentication failed.'}),404
     elif request.method == 'DELETE':
         token = request.headers.get('X-Token')

@@ -5,6 +5,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import ForeignKey
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+import json
 
 engine = create_engine('mysql://compuser:smellslikesoup@131.104.49.60/comp', echo=True)
 Session = sessionmaker(bind=engine)
@@ -16,6 +18,7 @@ class User(Base):
     userId = Column(Integer, primary_key=True)
     firstName = Column(String)
     lastName = Column(String)
+    userName = Column(String)
     password = Column(String)
     bio = Column(String)
 
@@ -107,6 +110,46 @@ class EventRole(Base):
     event = relationship("Event", backref=backref('eventRoles'))
     user = relationship('User', backref=backref('eventRoles'))
     permission = relationship("Permission", backref=backref('eventRoles'))
+
+class CommunicationAdapter(object):
+    def store_user(self, request):
+        new_user = request.json
+        user = User(userName=new_user['userName'], password=new_user['password'])
+        if 'firstName' in new_user:
+            user.firstName = new_user['firstName']
+        if 'lastName' in new_user:
+            user.lastName = new_user['lastName']
+        session = Session()
+        if session.query(User.userId).filter(User.userName == new_user['userName']).count() == 0:
+            session.add(user)
+            session.commit()
+            session.close()
+            return to_dict(user)
+        else:
+            return None
+
+    def get_user_by_username(self, username):
+        session = Session()
+
+        try:
+            user = session.query(User).filter(User.userName == username).one()
+            return to_dict(user)
+
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
+
+        
+
+def to_dict(model):
+    o = {}
+    for col in model._sa_class_manager.mapper.mapped_table.columns:
+        o[col.name] = getattr(model, col.name)
+    return o
+
 
 def main():
     ed_user = User(firstName="Edward", lastName="Paulson", password="smellslikesoup", bio="Hi my name is edward paulson")
