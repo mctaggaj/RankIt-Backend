@@ -123,8 +123,9 @@ class CommunicationAdapter(object):
         if session.query(User.userId).filter(User.userName == new_user['userName']).count() == 0:
             session.add(user)
             session.commit()
+            u = to_dict(user)
             session.close()
-            return to_dict(user)
+            return u
         else:
             return None
 
