@@ -58,6 +58,56 @@ class CompetitionRole(Base):
     user = relationship("User", backref=backref('compRoles'))
     permission = relationship("Permission", backref=backref('compRoles'))
 
+class Stage(Base):
+    __tablename__ = 'Stage'
+    stageId = Column(Integer, primary_key=True)
+    results = Column(String)
+    participants = Column(String)
+    location = Column(String)
+    previousStageId = Column(Integer, ForeignKey('Stage.stageId'))
+    nextStageId = Column(Integer, ForeignKey('Stage.stageId'))
+    description = Column(String)
+    name = Column(String)
+    compId = Column(Integer, ForeignKey('Competition.competitionId'))
+
+    nextStage = relationship("Stage", uselist=False, foreign_keys=[previousStageId])
+    previousStage = relationship("Stage", uselist=False, foreign_keys=[nextStageId])
+    competition = relationship("Competition", backref=backref('stages'))
+
+class StageRole(Base):
+    __tablename__ = 'StageRole'
+    stageRoleId = Column(Integer, primary_key=True)
+    stageId = Column(Integer, ForeignKey('Stage.stageId'))
+    userId = Column(Integer, ForeignKey('User.userId'))
+    permId = Column(Integer, ForeignKey('Permission.permId'))
+
+    stage = relationship("Stage", backref=backref('stageRoles'))
+    user = relationship("User", backref=backref('stageRoles'))
+    permission = relationship("Permission", backref=backref('stageRoles'))
+
+class Event(Base):
+    __tablename__ = 'Event'
+    eventId = Column(Integer, primary_key=True)
+    name = Column(String)
+    location = Column(String)
+    seed = Column(String)
+    results = Column(String)
+    stageId = Column(Integer, ForeignKey('Stage.stageId'))
+    compId = Column(Integer, ForeignKey('Competition.competitionId'))
+
+    stage = relationship("Stage", backref=backref('events'))
+    competition = relationship("Competition", backref=backref('events'))
+
+class EventRole(Base):
+    __tablename__ = "EventRole"
+    eventRoleId = Column(Integer, primary_key=True)
+    eventId = Column(Integer, ForeignKey('Event.eventId'))
+    userId = Column(Integer, ForeignKey('User.userId'))
+    permId = Column(Integer, ForeignKey('Permission.permId'))
+
+    event = relationship("Event", backref=backref('eventRoles'))
+    user = relationship('User', backref=backref('eventRoles'))
+    permission = relationship("Permission", backref=backref('eventRoles'))
 
 def main():
     ed_user = User(firstName="Edward", lastName="Paulson", password="smellslikesoup", bio="Hi my name is edward paulson")
