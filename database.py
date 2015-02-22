@@ -36,7 +36,6 @@ class Competition(Base):
     name = Column(String)
     description = Column(String)
     location = Column(String)
-    participants = Column(String)
     streamUrl = Column(String)
     subject = Column(String)
     visibility = Column(Integer)
@@ -126,7 +125,7 @@ def main():
     ed_user.compRoles.append(compRole)
 
 
-    session.commit()
+    #session.commit()
 
 if __name__ == "__main__":
     main()
