@@ -439,15 +439,16 @@ def all_competitions():
 @app.route('/api/users', methods=['POST'])
 def users_response():
     data = request.json
+    new_user = {}
     new_user['userName'] = data['userName'] # safety from the unknown object being sent
     new_user['password'] = data['password']
-    for user in users:
+    for user in users['users']:
         if user['userName'] == new_user['userName']:
             return jsonify({'status':'UserExists', 'msg':'Username already exists.'}), 400
-    nextID = users[-1]['userId']+1
+    nextID = users['users'][-1]['userId']+1
     new_user['userId'] = nextID
     new_user['token'] = generateToken()
-    users.append(new_user)
+    users['users'].append(new_user)
     return jsonify(new_user), 201
 
 
