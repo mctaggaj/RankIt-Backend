@@ -457,7 +457,7 @@ def authenticate():
             token = generateToken()
             sessions[token] = user['userId']
             return jsonify({"userId":user['userId'], 'token':token}), 200
-        return jsonify({'status': 'AuthFailure', 'msg':'Authentication failed.'}),404
+        return jsonify({'status': 'AuthFailure', 'msg':'Authentication failed.'}),400
     elif request.method == 'DELETE':
         token = request.headers.get('X-Token')
         if token in sessions:
