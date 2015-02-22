@@ -460,7 +460,8 @@ def authenticate():
         return jsonify({'status': 'AuthFailure', 'msg':'Authentication failed.'}),404
     elif request.method == 'DELETE':
         token = request.headers.get('X-Token')
-        del sessions[token]
+        if token in sessions:
+            del sessions[token]
         return jsonify({'msg':'Deauthenticated'}), 200
 
 if __name__ == '__main__':
