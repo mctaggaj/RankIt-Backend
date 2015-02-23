@@ -5,11 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 import database as db
 
-#engine = create_engine('mysql+pymysql://blbadmin:Chickenpotpie1@beerleagueblog.ca/blb')
-#Base = declarative_base()
-#Base.metadata.reflect(engine)
-
-adapter = db.CommunicationAdapter()
+adapter = db.DatabaseAdapter()
 
 comps = [{
   "competitionId": 0,
@@ -327,17 +323,6 @@ comps = [{
   ]
 }]
 
-users = {'users': [
-        {"userName" : "mctaggaj@mail.uoguelph.ca",
-         "userId" : 1,
-         "password" : "smellslikesoup"
-        },
-        {"userName" : "test@test.ca",
-         "userId" : 2,
-         "password" : "abc123"
-        }
-        ]}
-
 sessions = {}
 
 app = Flask(__name__, static_url_path="", static_folder="package")
@@ -425,34 +410,53 @@ def single_stage(competition_id, stage_id):
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
     if request.method == 'GET':
-        return jsonify({'competitions':comps}), 200
+        session = db.Session()
+        comps = adapter.get_all_competitions(session)
+        comps_dict = []
+        for comp in comps:
+            comps_dict.append(db.to_dict(comp))
+        session.close()
+        return jsonify({'competitions':comps_dict}), 200
     elif request.method == 'POST': 
         new_comp = request.json
-        if 'stages' not in new_comp:
-            new_comp['stages'] = []
         if 'competitionId' in new_comp:
             return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'}), 400
         if 'name' not in new_comp:
             return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'}), 400
-        new_comp['competitionId'] = comps[-1]['competitionId']+1
-        comps.append(new_comp)
-        return jsonify(new_comp),201
+        token = request.headers.get('X-Token')
+        if token not in sessions:
+            return jsonify({'msg':'Authentication is not valid'})
+        session = db.Session()
+        comp = adapter.store_competition(new_comp, sessions[token], session)
+        if comp is not None:
+            comp_dict = db.to_dict(comp)
+        else: 
+            comp_dict = {'msg':'Competition creation failed'}
+            session.close()
+            return jsonify(comp_dict),400
+        session.close()
+        return jsonify(comp_dict),201
 
 
 @app.route('/api/users', methods=['POST'])
 def users_response():
-    user = adapter.store_user(request)
-    if user is not None:
-        return jsonify(user), 201
+    session = db.Session()
+    u = adapter.store_user(request.json, session)
+    if u is not None:
+        user = db.to_dict(u)
     else:
         return jsonify({'status':'UserExists', 'msg':'Username already exists in database'})
+    session.close()
+    return jsonify(user), 201
 
 
 @app.route('/api/authentication', methods=['POST', 'DELETE'])
 def authenticate():
     if request.method == 'POST':
         user_req = request.json
-        user = adapter.get_user_by_username(user_req['userName'])
+        session = db.Session()
+        user = db.to_dict(adapter.get_user_by_username(user_req['userName'], session))
+        session.close()
         if user['userName'] == user_req['userName'] and user['password'] == user_req['password']:
             token = generateToken()
             sessions[token] = user['userId']
