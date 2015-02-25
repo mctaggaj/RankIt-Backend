@@ -366,10 +366,14 @@ def competition(competition_id):
     if request.method == 'PUT':
         return "Not yet implemented", 501
     elif request.method == 'GET':
-        for competition in comps:
-            if competition['competitionId'] == int(competition_id):
-                return jsonify({'competition': competition, 'status': 'OK'})
-        return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
+        session = db.Session()
+        comp = adapter.get_competition_by_compid(competition_id, session)
+        if comp is None:
+            session.close()
+            return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
+        comp_dict = db.to_dict(comp)
+        session.close()
+        return jsonify(comp_dict)
 
 @app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
 def stages(competition_id):

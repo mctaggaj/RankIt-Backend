@@ -152,8 +152,18 @@ class DatabaseAdapter(object):
 
     def get_all_competitions(self, session):
         comps = session.query(Competition).filter(Competition.public == 1).all()
-        print comps
         return comps
+
+    def get_competition_by_compid(self, compid, session):
+        try:
+            comp = session.query(Competition).filter(Competition.competitionId == compid).one()
+            return comp 
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
 
     def get_user_by_userid(self, userid, session):
         try:
