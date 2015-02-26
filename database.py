@@ -143,6 +143,19 @@ class CommunicationAdapter(object):
             print e
             return None
 
+    def get_user_by_userid(self, userid):
+        session = Session()
+
+        try:
+            user = session.query(User).filter(User.userId == userid).one()
+            return to_dict(user)
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
+
         
 
 def to_dict(model):

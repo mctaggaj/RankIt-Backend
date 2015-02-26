@@ -447,6 +447,13 @@ def users_response():
     else:
         return jsonify({'status':'UserExists', 'msg':'Username already exists in database'})
 
+@app.route('/api/users/<user_id>')
+def get_user(user_id):
+    user = adapter.get_user_by_userid(user_id)
+    if user is not None:
+        return jsonify(user)
+    else:
+        return jsonify({'msg':'User was not found'})
 
 @app.route('/api/authentication', methods=['POST', 'DELETE'])
 def authenticate():
