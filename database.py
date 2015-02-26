@@ -258,12 +258,23 @@ def to_dict(model):
         o['stages'] = []
         for stage in stages:
             o['stages'].append(to_dict(stage))
+        o['users'] = []
+        for role in model.compRoles:
+            o['users'].append(to_dict(role))
 
     if type(model) is Stage:
         events = model.events
         o['events'] = []
         for event in events:
             o['events'].append(to_dict(event))
+        o['users'] = []
+        for role in model.stageRoles:
+            o['users'].append(to_dict(role))
+
+    if type(model) is Event:
+        o['users'] = []
+        for role in model.eventRoles:
+            o['users'].append(to_dict(role))
 
     for key in o:
         if o[key] is None:
