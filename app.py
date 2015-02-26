@@ -385,16 +385,9 @@ def stages(competition_id):
         new_stage = request.json
         if 'stageId' in new_stage:
             return jsonify({'status':'InvalidField', 'msg':'Stage ID cannot be provided in new stage.'}),400
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                if len(comp['stages']) is 0:
-                    new_stage['stageId'] = 0
-                else:
-                    new_stage['stageId'] = comp['stages'][-1]['stageId'] + 1
-                if 'events' not in new_stage:
-                    new_stage['events'] = []
-                comp['stages'].append(new_stage)
-                return jsonify(new_stage), 201
+        session = db.Session()
+        new_stage = adapter.store_stage(new_stage, competition_id, session)
+        return jsonify(db.to_dict(new_stage)), 201
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 

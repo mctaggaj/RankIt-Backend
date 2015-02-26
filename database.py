@@ -66,6 +66,7 @@ class Stage(Base):
     nextStageId = Column(Integer, ForeignKey('Stage.stageId'))
     description = Column(String)
     name = Column(String)
+    state = Column(String)
     compId = Column(Integer, ForeignKey('Competition.competitionId'))
 
     nextStage = relationship("Stage", uselist=False, foreign_keys=[previousStageId])
@@ -150,6 +151,24 @@ class DatabaseAdapter(object):
         session.commit()
         return comp
 
+    def store_stage(self, stage_js, compid, session):
+        if 'name' not in stage_js or 'state' not in stage_js:
+            return None
+
+        stage = Stage(name = stage_js['name'], state=stage_js['state'])
+        session.add(stage)
+        if 'location' in stage_js:
+            stage.location = stage_js['location']
+        if 'description' in stage_js:
+            stage.description = stage_js['description']
+        if 'nextStage' in stage_js:
+            stage.nextStageId = stage_js['nextStage']
+        if 'previousStage' in stage_js:
+            stage.previousStageId = stage_js['previousStage']
+        stage.compId = compid
+        session.commit()
+        return stage
+
     def get_all_competitions(self, session):
         comps = session.query(Competition).filter(Competition.public == 1).all()
         return comps
@@ -158,6 +177,20 @@ class DatabaseAdapter(object):
         try:
             comp = session.query(Competition).filter(Competition.competitionId == compid).one()
             return comp 
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
+
+    def build_stages(self, compid, session):
+        pass
+
+    def get_stage_by_stageid(self, stageid, session):
+        try:
+            stage = session.query(Stage).filter(Stage.stageId == stageid).one()
+            return stage
         except MultipleResultsFound, e:
             print e
             return None
@@ -192,6 +225,10 @@ def to_dict(model):
     o = {}
     for col in model._sa_class_manager.mapper.mapped_table.columns:
         o[col.name] = getattr(model, col.name)
+
+    for key in o:
+        if o[key] is None:
+            o[key] = ''
     return o
 
 
