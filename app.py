@@ -338,26 +338,23 @@ def index():
 @app.route('/api/competitions/<competition_id>/stages/<stage_id>/events', methods=['GET', 'POST'])
 def events(competition_id, stage_id):
     if request.method == 'GET':
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                for stage in comp['stages']:
-                    if stage['stageId'] == int(stage_id):
-                        return jsonify({'events':stage['events']})
-        return jsonify({'msg':'Competition or stage ID was not found'}), 404    
+        session = db.Session()
+        events = adapter.get_all_events_by_stageid(stage_id, session)
+        events_dicts = []
+        for event in events:
+            events_dicts.append(db.to_dict(event))
+        session.close()
+        return jsonify({'events':events_dicts})
     elif request.method == 'POST':
         new_event = request.json
         if 'eventId' in new_event:
             return jsonify({'status':'InvalidField', 'msg':'Event Id cannot be provided in new stage.'}),400
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                for stage in comp['stages']:
-                    if stage['stageId'] == int(stage_id):
-                        if len(stage['events']) is 0:
-                            new_event['eventId'] = 0
-                        else:
-                            new_event['eventId'] = stage['events'][-1]['eventId'] +1
-                        stage['events'].append(new_event)
-                        return jsonify(new_event), 201
+        session = db.Session()
+        added = adapter.store_event(new_event, stage_id, competition_id, session)
+        if added is not None:
+            converted = db.to_dict(added)
+            session.close()
+            return jsonify(converted), 201
         return jsonify({'msg':'Competition or stage ID not found'}), 404        
 
 
@@ -378,9 +375,13 @@ def competition(competition_id):
 @app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
 def stages(competition_id):
     if request.method == 'GET':
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                return jsonify({'stages':comp['stages']})
+        session = db.Session()
+        stages = adapter.get_all_stages_by_compid(competition_id, session)
+        stages_dicts = []
+        for stage in stages:
+            stages_dicts.append(db.to_dict(stage))
+        session.close()
+        return jsonify({'stages':stages_dicts})
     elif request.method == 'POST':
         new_stage = request.json
         if 'stageId' in new_stage:

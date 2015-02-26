@@ -91,6 +91,7 @@ class Event(Base):
     location = Column(String)
     seed = Column(String)
     results = Column(String)
+    state = Column(String)
     stageId = Column(Integer, ForeignKey('Stage.stageId'))
     compId = Column(Integer, ForeignKey('Competition.competitionId'))
 
@@ -169,6 +170,20 @@ class DatabaseAdapter(object):
         session.commit()
         return stage
 
+    def store_event(self, event_js, stageid, compid, session):
+        if 'name' not in event_js or 'state' not in event_js:
+            return None
+        event = Event(name = event_js['name'], state = event_js['state'])
+        session.add(event)
+        if 'location' in event_js:
+            event.location = event_js['location']
+        if 'description' in event_js:
+            event.description = event_js['description']
+        event.compId = compid
+        event.stageId = stageid
+        session.commit()
+        return event
+
     def get_all_competitions(self, session):
         comps = session.query(Competition).filter(Competition.public == 1).all()
         return comps
@@ -184,8 +199,13 @@ class DatabaseAdapter(object):
             print e
             return None
 
-    def build_stages(self, compid, session):
-        pass
+    def get_all_stages_by_compid(self, compid, session):
+        try:
+            stages = session.query(Stage).filter(Stage.compId == compid).all()
+            return stages
+        except NoResultFound, e:
+            print e
+            return None
 
     def get_stage_by_stageid(self, stageid, session):
         try:
@@ -194,6 +214,14 @@ class DatabaseAdapter(object):
         except MultipleResultsFound, e:
             print e
             return None
+        except NoResultFound, e:
+            print e
+            return None
+
+    def get_all_events_by_stageid(self, stageid, session):
+        try:
+            events = session.query(Event).filter(Event.stageId == stageid).all()
+            return events
         except NoResultFound, e:
             print e
             return None
@@ -225,6 +253,18 @@ def to_dict(model):
     o = {}
     for col in model._sa_class_manager.mapper.mapped_table.columns:
         o[col.name] = getattr(model, col.name)
+
+    if type(model) is Competition:
+        stages = model.stages
+        o['stages'] = []
+        for stage in stages:
+            o['stages'].append(to_dict(stage))
+
+    if type(model) is Stage:
+        events = model.events
+        o['events'] = []
+        for event in events:
+            o['events'].append(to_dict(event))
 
     for key in o:
         if o[key] is None:
