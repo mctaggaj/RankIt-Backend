@@ -29,9 +29,9 @@ class User(Base):
 class Permission(Base):
     __tablename__ = 'Permission'
     permId = Column(Integer, primary_key=True)
-    view = Column(Integer)
-    update = Column(Integer)
-    score = Column(Integer)
+    admin = Column(Integer)
+    judge = Column(Integer)
+    competitor = Column(Integer)
 
 class Competition(Base):
     __tablename__ = 'Competition'
@@ -41,13 +41,9 @@ class Competition(Base):
     location = Column(String)
     streamUrl = Column(String)
     subject = Column(String)
-    visibility = Column(Integer)
+    public = Column(Integer)
     results = Column(String)
-
-    def __repr__(self):
-        return '''<Competition(competitionId='%s', name='%s', description='%s', location='%s', participants='%s', 
-            streamUrl='%s', subject='%s', visibility='%s', results='%s')>''' % (self.competitionId, self.name,
-                    self.location, self.participants, self.streamUrl, self.subject, self.visibility, self.results)
+    state = Column(String)
 
 class CompetitionRole(Base):
     __tablename__ = 'CompetitionRole'
@@ -70,6 +66,7 @@ class Stage(Base):
     nextStageId = Column(Integer, ForeignKey('Stage.stageId'))
     description = Column(String)
     name = Column(String)
+    state = Column(String)
     compId = Column(Integer, ForeignKey('Competition.competitionId'))
 
     nextStage = relationship("Stage", uselist=False, foreign_keys=[previousStageId])
@@ -94,6 +91,7 @@ class Event(Base):
     location = Column(String)
     seed = Column(String)
     results = Column(String)
+    state = Column(String)
     stageId = Column(Integer, ForeignKey('Stage.stageId'))
     compId = Column(Integer, ForeignKey('Competition.competitionId'))
 
@@ -111,31 +109,89 @@ class EventRole(Base):
     user = relationship('User', backref=backref('eventRoles'))
     permission = relationship("Permission", backref=backref('eventRoles'))
 
-class CommunicationAdapter(object):
-    def store_user(self, request):
-        new_user = request.json
+class DatabaseAdapter(object):
+    def store_user(self, new_user, session):
+        if 'userName' not in new_user or 'password' not in new_user:
+            return None
         user = User(userName=new_user['userName'], password=new_user['password'])
         if 'firstName' in new_user:
             user.firstName = new_user['firstName']
         if 'lastName' in new_user:
             user.lastName = new_user['lastName']
-        session = Session()
         if session.query(User.userId).filter(User.userName == new_user['userName']).count() == 0:
             session.add(user)
             session.commit()
-            u = to_dict(user)
-            session.close()
-            return u
+            return user
         else:
             return None
 
-    def get_user_by_username(self, username):
-        session = Session()
+    def store_competition(self, comp_js, creator_id, session):
+        if 'name' not in comp_js or 'state' not in comp_js or 'public' not in comp_js:
+            return None
+        comp = Competition(name=comp_js['name'], state=comp_js['state'], public=comp_js['public'])
 
+        if 'location' in comp_js:
+            comp.location = comp_js['location']
+        if 'description' in comp_js:
+            comp.description = comp_js['description']
+        if 'streamUrl' in comp_js:
+            comp.streamUrl = comp_js['streamUrl']
+
+        compRole = CompetitionRole()
+        user = self.get_user_by_userid(creator_id, session)
+        if user is None:
+            return None
+        permission = Permission(admin=1, judge=0, competitor=0)
+        session.add(compRole)
+        session.add(user)
+        session.add(permission)
+        session.add(comp)
+        user.compRoles.append(compRole)
+        permission.compRoles.append(compRole)
+        comp.compRoles.append(compRole)
+        session.commit()
+        return comp
+
+    def store_stage(self, stage_js, compid, session):
+        if 'name' not in stage_js or 'state' not in stage_js:
+            return None
+
+        stage = Stage(name = stage_js['name'], state=stage_js['state'])
+        session.add(stage)
+        if 'location' in stage_js:
+            stage.location = stage_js['location']
+        if 'description' in stage_js:
+            stage.description = stage_js['description']
+        if 'nextStage' in stage_js:
+            stage.nextStageId = stage_js['nextStage']
+        if 'previousStage' in stage_js:
+            stage.previousStageId = stage_js['previousStage']
+        stage.compId = compid
+        session.commit()
+        return stage
+
+    def store_event(self, event_js, stageid, compid, session):
+        if 'name' not in event_js or 'state' not in event_js:
+            return None
+        event = Event(name = event_js['name'], state = event_js['state'])
+        session.add(event)
+        if 'location' in event_js:
+            event.location = event_js['location']
+        if 'description' in event_js:
+            event.description = event_js['description']
+        event.compId = compid
+        event.stageId = stageid
+        session.commit()
+        return event
+
+    def get_all_competitions(self, session):
+        comps = session.query(Competition).filter(Competition.public == 1).all()
+        return comps
+
+    def get_competition_by_compid(self, compid, session):
         try:
-            user = session.query(User).filter(User.userName == username).one()
-            return to_dict(user)
-
+            comp = session.query(Competition).filter(Competition.competitionId == compid).one()
+            return comp 
         except MultipleResultsFound, e:
             print e
             return None
@@ -143,12 +199,37 @@ class CommunicationAdapter(object):
             print e
             return None
 
-    def get_user_by_userid(self, userid):
-        session = Session()
+    def get_all_stages_by_compid(self, compid, session):
+        try:
+            stages = session.query(Stage).filter(Stage.compId == compid).all()
+            return stages
+        except NoResultFound, e:
+            print e
+            return None
 
+    def get_stage_by_stageid(self, stageid, session):
+        try:
+            stage = session.query(Stage).filter(Stage.stageId == stageid).one()
+            return stage
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
+
+    def get_all_events_by_stageid(self, stageid, session):
+        try:
+            events = session.query(Event).filter(Event.stageId == stageid).all()
+            return events
+        except NoResultFound, e:
+            print e
+            return None
+
+    def get_user_by_userid(self, userid, session):
         try:
             user = session.query(User).filter(User.userId == userid).one()
-            return to_dict(user)
+            return user
         except MultipleResultsFound, e:
             print e
             return None
@@ -156,12 +237,37 @@ class CommunicationAdapter(object):
             print e
             return None
 
-        
+    def get_user_by_username(self, username, session):
+        try:
+            user = session.query(User).filter(User.userName == username).one()
+            return user
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
 
 def to_dict(model):
     o = {}
     for col in model._sa_class_manager.mapper.mapped_table.columns:
         o[col.name] = getattr(model, col.name)
+
+    if type(model) is Competition:
+        stages = model.stages
+        o['stages'] = []
+        for stage in stages:
+            o['stages'].append(to_dict(stage))
+
+    if type(model) is Stage:
+        events = model.events
+        o['events'] = []
+        for event in events:
+            o['events'].append(to_dict(event))
+
+    for key in o:
+        if o[key] is None:
+            o[key] = ''
     return o
 
 

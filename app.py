@@ -5,11 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 import database as db
 
-#engine = create_engine('mysql+pymysql://blbadmin:Chickenpotpie1@beerleagueblog.ca/blb')
-#Base = declarative_base()
-#Base.metadata.reflect(engine)
-
-adapter = db.CommunicationAdapter()
+adapter = db.DatabaseAdapter()
 
 comps = [{
   "competitionId": 0,
@@ -327,17 +323,6 @@ comps = [{
   ]
 }]
 
-users = {'users': [
-        {"userName" : "mctaggaj@mail.uoguelph.ca",
-         "userId" : 1,
-         "password" : "smellslikesoup"
-        },
-        {"userName" : "test@test.ca",
-         "userId" : 2,
-         "password" : "abc123"
-        }
-        ]}
-
 sessions = {}
 
 app = Flask(__name__, static_url_path="", static_folder="package")
@@ -353,26 +338,23 @@ def index():
 @app.route('/api/competitions/<competition_id>/stages/<stage_id>/events', methods=['GET', 'POST'])
 def events(competition_id, stage_id):
     if request.method == 'GET':
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                for stage in comp['stages']:
-                    if stage['stageId'] == int(stage_id):
-                        return jsonify({'events':stage['events']})
-        return jsonify({'msg':'Competition or stage ID was not found'}), 404    
+        session = db.Session()
+        events = adapter.get_all_events_by_stageid(stage_id, session)
+        events_dicts = []
+        for event in events:
+            events_dicts.append(db.to_dict(event))
+        session.close()
+        return jsonify({'events':events_dicts})
     elif request.method == 'POST':
         new_event = request.json
         if 'eventId' in new_event:
             return jsonify({'status':'InvalidField', 'msg':'Event Id cannot be provided in new stage.'}),400
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                for stage in comp['stages']:
-                    if stage['stageId'] == int(stage_id):
-                        if len(stage['events']) is 0:
-                            new_event['eventId'] = 0
-                        else:
-                            new_event['eventId'] = stage['events'][-1]['eventId'] +1
-                        stage['events'].append(new_event)
-                        return jsonify(new_event), 201
+        session = db.Session()
+        added = adapter.store_event(new_event, stage_id, competition_id, session)
+        if added is not None:
+            converted = db.to_dict(added)
+            session.close()
+            return jsonify(converted), 201
         return jsonify({'msg':'Competition or stage ID not found'}), 404        
 
 
@@ -381,31 +363,32 @@ def competition(competition_id):
     if request.method == 'PUT':
         return "Not yet implemented", 501
     elif request.method == 'GET':
-        for competition in comps:
-            if competition['competitionId'] == int(competition_id):
-                return jsonify({'competition': competition, 'status': 'OK'})
-        return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
+        session = db.Session()
+        comp = adapter.get_competition_by_compid(competition_id, session)
+        if comp is None:
+            session.close()
+            return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
+        comp_dict = db.to_dict(comp)
+        session.close()
+        return jsonify(comp_dict)
 
 @app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
 def stages(competition_id):
     if request.method == 'GET':
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                return jsonify({'stages':comp['stages']})
+        session = db.Session()
+        stages = adapter.get_all_stages_by_compid(competition_id, session)
+        stages_dicts = []
+        for stage in stages:
+            stages_dicts.append(db.to_dict(stage))
+        session.close()
+        return jsonify({'stages':stages_dicts})
     elif request.method == 'POST':
         new_stage = request.json
         if 'stageId' in new_stage:
             return jsonify({'status':'InvalidField', 'msg':'Stage ID cannot be provided in new stage.'}),400
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                if len(comp['stages']) is 0:
-                    new_stage['stageId'] = 0
-                else:
-                    new_stage['stageId'] = comp['stages'][-1]['stageId'] + 1
-                if 'events' not in new_stage:
-                    new_stage['events'] = []
-                comp['stages'].append(new_stage)
-                return jsonify(new_stage), 201
+        session = db.Session()
+        new_stage = adapter.store_stage(new_stage, competition_id, session)
+        return jsonify(db.to_dict(new_stage)), 201
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 
@@ -425,27 +408,44 @@ def single_stage(competition_id, stage_id):
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
     if request.method == 'GET':
-        return jsonify({'competitions':comps}), 200
+        session = db.Session()
+        comps = adapter.get_all_competitions(session)
+        comps_dict = []
+        for comp in comps:
+            comps_dict.append(db.to_dict(comp))
+        session.close()
+        return jsonify({'competitions':comps_dict}), 200
     elif request.method == 'POST': 
         new_comp = request.json
-        if 'stages' not in new_comp:
-            new_comp['stages'] = []
         if 'competitionId' in new_comp:
             return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'}), 400
         if 'name' not in new_comp:
             return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'}), 400
-        new_comp['competitionId'] = comps[-1]['competitionId']+1
-        comps.append(new_comp)
-        return jsonify(new_comp),201
+        token = request.headers.get('X-Token')
+        if token not in sessions:
+            return jsonify({'msg':'Authentication is not valid'})
+        session = db.Session()
+        comp = adapter.store_competition(new_comp, sessions[token], session)
+        if comp is not None:
+            comp_dict = db.to_dict(comp)
+        else: 
+            comp_dict = {'msg':'Competition creation failed'}
+            session.close()
+            return jsonify(comp_dict),400
+        session.close()
+        return jsonify(comp_dict),201
 
 
 @app.route('/api/users', methods=['POST'])
 def users_response():
-    user = adapter.store_user(request)
-    if user is not None:
-        return jsonify(user), 201
+    session = db.Session()
+    u = adapter.store_user(request.json, session)
+    if u is not None:
+        user = db.to_dict(u)
     else:
         return jsonify({'status':'UserExists', 'msg':'Username already exists in database'})
+    session.close()
+    return jsonify(user), 201
 
 @app.route('/api/users/<user_id>')
 def get_user(user_id):
@@ -459,7 +459,9 @@ def get_user(user_id):
 def authenticate():
     if request.method == 'POST':
         user_req = request.json
-        user = adapter.get_user_by_username(user_req['userName'])
+        session = db.Session()
+        user = db.to_dict(adapter.get_user_by_username(user_req['userName'], session))
+        session.close()
         if user['userName'] == user_req['userName'] and user['password'] == user_req['password']:
             token = generateToken()
             sessions[token] = user['userId']
