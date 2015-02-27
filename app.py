@@ -391,16 +391,18 @@ def stages(competition_id):
         return jsonify(db.to_dict(new_stage)), 201
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
-
-@app.route('/api/competitions/<competition_id>/stages/<stage_id>', methods=['GET', 'PUT'])
-def single_stage(competition_id, stage_id):
+#Todo Update documentation with new url
+@app.route('/api/stages/<stage_id>', methods=['GET', 'PUT'])
+def single_stage(stage_id):
     if request.method == 'GET':
-        for comp in comps:
-            if comp['competitionId'] == int(competition_id):
-                for stage in comp['stages']:
-                    if stage['stageId'] == int(stage_id):
-                        return jsonify(stage)
-        return jsonify({'msg':'Stage or competition resource not found'}), 404
+        session = db.Session()
+        stage = adapter.get_stage_by_stageid(stage_id, session)
+        if stage is None:
+            session.close()
+            return jsonify({'status': 'NoStage', 'msg': 'Stage ID was not found.'}), 404
+        stage_dict = db.to_dict(stage)
+        session.close()
+        return jsonify(stage_dict)
                     
     else:
         return "Not yet implemented", 501
