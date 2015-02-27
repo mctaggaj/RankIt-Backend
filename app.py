@@ -371,6 +371,20 @@ def competition(competition_id):
         comp_dict = db.to_dict(comp)
         session.close()
         return jsonify(comp_dict)
+    
+@app.route('/api/events/<event_id>', methods=['GET', 'PUT'])
+def event(event_id):
+    if request.method == 'PUT':
+        return "Not yet implemented", 501
+    elif request.method == 'GET':
+        session = db.Session()
+        event = adapter.get_event_by_eventid(event_id, session)
+        if event is None:
+            session.close()
+            return jsonify({'status': 'NoCompetition', 'msg': 'Event ID was not found.'}), 404
+        event_dict = db.to_dict(event)
+        session.close()
+        return jsonify(event_dict)
 
 @app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
 def stages(competition_id):
