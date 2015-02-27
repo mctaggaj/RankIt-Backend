@@ -225,6 +225,14 @@ class DatabaseAdapter(object):
             print e
             return None
 
+    def get_event_by_eventid(self, eventid, session):
+        try:
+            events = session.query(Event).filter(Event.eventId == eventid).one()
+            return events
+        except NoResultFound, e:
+            print e
+            return None
+
     def get_user_by_userid(self, userid, session):
         try:
             user = session.query(User).filter(User.userId == userid).one()
