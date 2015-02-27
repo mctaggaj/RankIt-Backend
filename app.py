@@ -177,7 +177,7 @@ comps = [{
           "location": "Mario Circut",
           "stageId": 0,
           "state": "Completed",
-          "results": [ 
+          "results": [
             2,
             1
           ],
@@ -350,12 +350,12 @@ def events(competition_id, stage_id):
         if 'eventId' in new_event:
             return jsonify({'status':'InvalidField', 'msg':'Event Id cannot be provided in new stage.'}),400
         session = db.Session()
-        added = adapter.store_event(new_event, stage_id, competition_id, session)
+        added = adapter.store_event(new_event, stage_id, session)
         if added is not None:
             converted = db.to_dict(added)
             session.close()
             return jsonify(converted), 201
-        return jsonify({'msg':'Competition or stage ID not found'}), 404        
+        return jsonify({'msg':'Competition or stage ID not found'}), 404
 
 
 @app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
@@ -403,7 +403,7 @@ def single_stage(stage_id):
         stage_dict = db.to_dict(stage)
         session.close()
         return jsonify(stage_dict)
-                    
+
     else:
         return "Not yet implemented", 501
 
@@ -417,7 +417,7 @@ def all_competitions():
             comps_dict.append(db.to_dict(comp))
         session.close()
         return jsonify({'competitions':comps_dict}), 200
-    elif request.method == 'POST': 
+    elif request.method == 'POST':
         new_comp = request.json
         if 'competitionId' in new_comp:
             return jsonify({'status':'InvalidField', 'msg':'Competition ID cannot be provided in new competition.'}), 400
@@ -430,7 +430,7 @@ def all_competitions():
         comp = adapter.store_competition(new_comp, sessions[token], session)
         if comp is not None:
             comp_dict = db.to_dict(comp)
-        else: 
+        else:
             comp_dict = {'msg':'Competition creation failed'}
             session.close()
             return jsonify(comp_dict),400

@@ -170,7 +170,7 @@ class DatabaseAdapter(object):
         session.commit()
         return stage
 
-    def store_event(self, event_js, stageid, compid, session):
+    def store_event(self, event_js, stageid, session):
         if 'name' not in event_js or 'state' not in event_js:
             return None
         event = Event(name = event_js['name'], state = event_js['state'])
@@ -179,7 +179,6 @@ class DatabaseAdapter(object):
             event.location = event_js['location']
         if 'description' in event_js:
             event.description = event_js['description']
-        event.compId = compid
         event.stageId = stageid
         session.commit()
         return event
@@ -191,7 +190,7 @@ class DatabaseAdapter(object):
     def get_competition_by_compid(self, compid, session):
         try:
             comp = session.query(Competition).filter(Competition.competitionId == compid).one()
-            return comp 
+            return comp
         except MultipleResultsFound, e:
             print e
             return None
