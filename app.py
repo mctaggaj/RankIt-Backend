@@ -1,3 +1,5 @@
+#RESTful Web Service
+#Written by: Shawn Hind
 from flask import Flask, jsonify, request
 import json
 import uuid
