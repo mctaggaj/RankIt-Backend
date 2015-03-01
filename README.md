@@ -2,6 +2,13 @@
 
 This is the REST API to be used for manipulating competition data for Weresoft's competition tracking web app.
 
-### How do I get set up? ###
+### Dependencies ###
+    * Python 2.7
+    * SQLAlchemy module
+    * MySQL-python module
+    * Flask module
 
-* To run the web app, activate the virtualenv that is included in the repository called "venv".
+### Running ###
+    * Install all required python modules
+    * Run app.py to start the backend
+    * Navigate to localhost:5000
