@@ -136,6 +136,8 @@ class DatabaseAdapter(object):
             comp.description = comp_js['description']
         if 'streamUrl' in comp_js:
             comp.streamUrl = comp_js['streamUrl']
+        if 'subject' in comp_js:
+            comp.subject = comp_js['subject']
 
         compRole = CompetitionRole()
         user = self.get_user_by_userid(creator_id, session)
