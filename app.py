@@ -465,10 +465,14 @@ def users_response():
 
 @app.route('/api/users/<user_id>')
 def get_user(user_id):
+    session = db.Session()
     user = adapter.get_user_by_userid(user_id)
     if user is not None:
+        user_dict = db.to_dict(user)
+        session.close()
         return jsonify(user)
     else:
+        session.close()
         return jsonify({'msg':'User was not found'})
 
 @app.route('/api/authentication', methods=['POST', 'DELETE'])
