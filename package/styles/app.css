@@ -1,3 +1,7 @@
+/*
+ * The app styles
+ * Author: Jason McTaggart
+ */
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
 html {
   font-family: sans-serif;
@@ -6285,6 +6289,10 @@ button.close {
     display: none !important;
   }
 }
+/**
+ * The styles for the login page
+ * Author: Tim
+ */
 .main-view #login.login-container {
   position: relative;
   margin-left: auto;
@@ -6292,36 +6300,25 @@ button.close {
   margin-top: 10%;
   max-width: 500px;
 }
-.nav,
-.pagination,
-.carousel,
-.panel-title a {
-  cursor: pointer;
-}
-.main-view {
-  position: absolute;
-  top: 50px;
-  bottom: 0;
-  right: 0;
-  left: 0;
-}
-.main-view .top-push {
-  margin-top: 1em;
-}
-body {
-  background-image: url("../assets/images/bg.jpg");
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center center;
-}
+/**
+ * Styles for the comp-struct directive
+ * Author: Jason McTaggart
+ */
 comp-struct > div {
   height: 50px;
   width: 50px;
   top: 0;
   position: relative;
 }
-comp-struct > div canvas {
+comp-struct > div > canvas {
   position: absolute;
+  height: 100%;
+  width: 100%;
+}
+comp-struct > div > .stage-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
 }
 comp-struct > div .stage {
   width: 100%;
@@ -6360,4 +6357,48 @@ comp-struct > div.detail .event p {
 comp-struct > div.detail .event-container {
   padding-left: 5%;
   padding-right: 5%;
+}
+.nav,
+.pagination,
+.carousel,
+.panel-title a {
+  cursor: pointer;
+}
+.main-view {
+  position: absolute;
+  top: 50px;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+.main-view .top-push {
+  margin-top: 1em;
+}
+.ng-enter,
+.ng-leave {
+  -webkit-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
+  -moz-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
+  -ms-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
+  -o-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
+  transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
+  position: relative;
+  display: block;
+}
+.ng-enter.ng-enter-active,
+.ng-leave {
+  opacity: 1;
+  top: 0;
+  height: 30px;
+}
+.ng-leave.ng-leave-active,
+.ng-enter {
+  opacity: 0;
+  top: -50px;
+  height: 0px;
+}
+body {
+  background-image: url("../assets/images/bg.jpg");
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center center;
 }
