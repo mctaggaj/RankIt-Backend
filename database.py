@@ -270,6 +270,55 @@ def get_user_by_username(username, session):
         print e
         return None
 
+############################################
+#### Authentication Retrieval Functions ####
+############################################
+
+def get_competition_auth(compid, userid):
+    session = Session()
+    try:
+        role = session.query(CompetitionRole).filter(CompetitionRole.userId== userid, 
+                CompetitionRole.compId == compid).one()
+    except MultipleResultsFound, e:
+        print e
+        return None
+    except NoResultFound, e:
+        print e
+        return None
+    finally:
+        session.close()
+
+    return to_dict(role)
+
+def get_stage_auth(stageid, userid):
+    session = Session()
+    try:
+        role = session.query(StageRole).filter(StageRole.userId == userId, StageRole.compid == compid).one()
+    except MultipleResultsFound, e:
+        print e
+        return None
+    except NoResultFound, e:
+        print e
+        return None
+    finally:
+        session.close()
+
+    return to_dict(role)
+
+def get_event_auth(stageid, userid):
+    session = Session()
+    try:
+        role = session.query(EventRole).filter(EventRole.userId == userId, EventRole.compid == compid).one()
+    except MultipleResultsFound, e:
+        print e
+        return None
+    except NoResultFound, e:
+        print e
+        return None
+    finally:
+        session.close()
+
+    return to_dict(role)
 
 ################################
 #### Misc Utility Functions ####
@@ -308,9 +357,6 @@ def to_dict(model):
             o[key] = ''
     return o
 
-###########################################
-#### Authentication Checking Functions ####
-###########################################
 
 
 def main():
