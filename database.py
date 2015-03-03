@@ -293,7 +293,7 @@ def get_competition_auth(compid, userid):
 def get_stage_auth(stageid, userid):
     session = Session()
     try:
-        role = session.query(StageRole).filter(StageRole.userId == userId, StageRole.compid == compid).one()
+        role = session.query(StageRole).filter(StageRole.userId == userid, StageRole.compid == compid).one()
     except MultipleResultsFound, e:
         print e
         return None
@@ -308,7 +308,7 @@ def get_stage_auth(stageid, userid):
 def get_event_auth(stageid, userid):
     session = Session()
     try:
-        role = session.query(EventRole).filter(EventRole.userId == userId, EventRole.compid == compid).one()
+        role = session.query(EventRole).filter(EventRole.userId == userid, EventRole.compid == compid).one()
     except MultipleResultsFound, e:
         print e
         return None
