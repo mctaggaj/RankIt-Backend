@@ -15,6 +15,10 @@ Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
 
+################################
+#### Database Storage Types ####
+################################
+
 class User(Base):
     __tablename__ = 'User'
     userId = Column(Integer, primary_key=True)
@@ -111,6 +115,10 @@ class EventRole(Base):
     user = relationship('User', backref=backref('eventRoles'))
     permission = relationship("Permission", backref=backref('eventRoles'))
 
+####################################
+#### Database Storage Functions ####
+####################################
+
 def store_user(new_user, session):
     if 'userName' not in new_user or 'password' not in new_user:
         return None
@@ -186,6 +194,10 @@ def store_event(event_js, stageid, session):
     session.commit()
     return event
 
+######################################
+#### Database Retrieval Functions ####
+######################################
+
 def get_all_competitions(session):
     comps = session.query(Competition).filter(Competition.public == 1).all()
     return comps
@@ -258,6 +270,11 @@ def get_user_by_username(username, session):
         print e
         return None
 
+
+################################
+#### Misc Utility Functions ####
+################################
+
 def to_dict(model):
     o = {}
     for col in model._sa_class_manager.mapper.mapped_table.columns:
@@ -290,6 +307,10 @@ def to_dict(model):
         if o[key] is None:
             o[key] = ''
     return o
+
+###########################################
+#### Authentication Checking Functions ####
+###########################################
 
 
 def main():
