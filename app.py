@@ -7,8 +7,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 import database as db
 
-adapter = db.DatabaseAdapter()
-
 sessions = {}
 
 app = Flask(__name__, static_url_path="", static_folder="package")
@@ -25,7 +23,7 @@ def index():
 def events(competition_id, stage_id):
     if request.method == 'GET':
         session = db.Session()
-        events = adapter.get_all_events_by_stageid(stage_id, session)
+        events = db.get_all_events_by_stageid(stage_id, session)
         events_dicts = []
         for event in events:
             events_dicts.append(db.to_dict(event))
@@ -36,7 +34,7 @@ def events(competition_id, stage_id):
         if 'eventId' in new_event:
             return jsonify({'status':'InvalidField', 'msg':'Event Id cannot be provided in new stage.'}),400
         session = db.Session()
-        added = adapter.store_event(new_event, stage_id, session)
+        added = db.store_event(new_event, stage_id, session)
         if added is not None:
             converted = db.to_dict(added)
             session.close()
@@ -50,7 +48,7 @@ def competition(competition_id):
         return "Not yet implemented", 501
     elif request.method == 'GET':
         session = db.Session()
-        comp = adapter.get_competition_by_compid(competition_id, session)
+        comp = db.get_competition_by_compid(competition_id, session)
         if comp is None:
             session.close()
             return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
@@ -64,7 +62,7 @@ def event(event_id):
         return "Not yet implemented", 501
     elif request.method == 'GET':
         session = db.Session()
-        event = adapter.get_event_by_eventid(event_id, session)
+        event = db.get_event_by_eventid(event_id, session)
         if event is None:
             session.close()
             return jsonify({'status': 'NoCompetition', 'msg': 'Event ID was not found.'}), 404
@@ -76,7 +74,7 @@ def event(event_id):
 def stages(competition_id):
     if request.method == 'GET':
         session = db.Session()
-        stages = adapter.get_all_stages_by_compid(competition_id, session)
+        stages = db.get_all_stages_by_compid(competition_id, session)
         stages_dicts = []
         for stage in stages:
             stages_dicts.append(db.to_dict(stage))
@@ -87,16 +85,16 @@ def stages(competition_id):
         if 'stageId' in new_stage:
             return jsonify({'status':'InvalidField', 'msg':'Stage ID cannot be provided in new stage.'}),400
         session = db.Session()
-        new_stage = adapter.store_stage(new_stage, competition_id, session)
+        new_stage = db.store_stage(new_stage, competition_id, session)
         return jsonify(db.to_dict(new_stage)), 201
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
-#Todo Update documentation with new url
+
 @app.route('/api/stages/<stage_id>', methods=['GET', 'PUT'])
 def single_stage(stage_id):
     if request.method == 'GET':
         session = db.Session()
-        stage = adapter.get_stage_by_stageid(stage_id, session)
+        stage = db.get_stage_by_stageid(stage_id, session)
         if stage is None:
             session.close()
             return jsonify({'status': 'NoStage', 'msg': 'Stage ID was not found.'}), 404
@@ -111,7 +109,7 @@ def single_stage(stage_id):
 def all_competitions():
     if request.method == 'GET':
         session = db.Session()
-        comps = adapter.get_all_competitions(session)
+        comps = db.get_all_competitions(session)
         comps_dict = []
         for comp in comps:
             comps_dict.append(db.to_dict(comp))
@@ -127,7 +125,7 @@ def all_competitions():
         if token not in sessions:
             return jsonify({'msg':'Authentication is not valid'})
         session = db.Session()
-        comp = adapter.store_competition(new_comp, sessions[token], session)
+        comp = db.store_competition(new_comp, sessions[token], session)
         if comp is not None:
             comp_dict = db.to_dict(comp)
         else:
@@ -141,7 +139,7 @@ def all_competitions():
 @app.route('/api/users', methods=['POST'])
 def users_response():
     session = db.Session()
-    u = adapter.store_user(request.json, session)
+    u = db.store_user(request.json, session)
     if u is not None:
         user = db.to_dict(u)
     else:
@@ -152,7 +150,7 @@ def users_response():
 @app.route('/api/users/<user_id>')
 def get_user(user_id):
     session = db.Session()
-    user = adapter.get_user_by_userid(user_id)
+    user = db.get_user_by_userid(user_id)
     if user is not None:
         user_dict = db.to_dict(user)
         session.close()
@@ -166,7 +164,7 @@ def authenticate():
     if request.method == 'POST':
         user_req = request.json
         session = db.Session()
-        user = db.to_dict(adapter.get_user_by_username(user_req['userName'], session))
+        user = db.to_dict(db.get_user_by_username(user_req['userName'], session))
         session.close()
         if user['userName'] == user_req['userName'] and user['password'] == user_req['password']:
             token = generateToken()
