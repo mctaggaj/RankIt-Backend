@@ -164,7 +164,9 @@ def authenticate():
     if request.method == 'POST':
         user_req = request.json
         session = db.Session()
-        user = db.to_dict(db.get_user_by_username(user_req['userName'], session))
+        user = db.get_user_by_username(user_req['userName'], session)
+        if user is not None:
+            user = db.to_dict(user)
         session.close()
         if user['userName'] == user_req['userName'] and user['password'] == user_req['password']:
             token = generateToken()
