@@ -15,6 +15,7 @@ Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
 
+
 ################################
 #### Database Storage Types ####
 ################################
@@ -115,6 +116,7 @@ class EventRole(Base):
     user = relationship('User', backref=backref('eventRoles'))
     permission = relationship("Permission", backref=backref('eventRoles'))
 
+
 ####################################
 #### Database Storage Functions ####
 ####################################
@@ -194,6 +196,7 @@ def store_event(event_js, stageid, session):
     session.commit()
     return event
 
+
 ######################################
 #### Database Retrieval Functions ####
 ######################################
@@ -270,6 +273,7 @@ def get_user_by_username(username, session):
         print e
         return None
 
+
 ############################################
 #### Authentication Retrieval Functions ####
 ############################################
@@ -319,6 +323,11 @@ def get_event_auth(stageid, userid):
         session.close()
 
     return to_dict(role)
+
+
+########################################
+#### Permissions Checking Functions ####
+########################################
 
 def check_admin(role):
     try:
