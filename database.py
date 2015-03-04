@@ -320,6 +320,32 @@ def get_event_auth(stageid, userid):
 
     return to_dict(role)
 
+def check_admin(role):
+    try:
+        if role['admin'] == 1:
+            return True
+    except KeyError, e:
+        pass
+    return False
+
+def check_judge(role):
+    try:
+        if role['judge'] == 1:
+            return True
+    except KeyError, e:
+        pass
+    return False
+
+def check_competitor(role):
+    try:
+        if role['competitor'] == 1:
+            return True
+    except KeyError, e:
+        pass
+    return False
+
+            
+
 ################################
 #### Misc Utility Functions ####
 ################################
