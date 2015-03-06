@@ -151,9 +151,11 @@ def store_competition(comp_js, creator_id, session):
         comp.streamUrl = comp_js['streamUrl']
     if 'subject' in comp_js:
         comp.subject = comp_js['subject']
+    if 'seed' in comp_js:
+        comp.seed = seed_to_string(comp_js['seed'])
 
     compRole = CompetitionRole()
-    user = self.get_user_by_userid(creator_id, session)
+    user = get_user_by_userid(creator_id, session)
     if user is None:
         return None
     permission = Permission(admin=1, judge=0, competitor=0)
@@ -181,6 +183,8 @@ def store_stage(stage_js, compid, session):
         stage.nextStageId = stage_js['nextStage']
     if 'previousStage' in stage_js:
         stage.previousStageId = stage_js['previousStage']
+    if 'seed' in stage_js:
+        stage.seed = seed_to_string(stage_js['seed'])
     stage.compId = compid
     session.commit()
     return stage
@@ -194,6 +198,8 @@ def store_event(event_js, stageid, session):
         event.location = event_js['location']
     if 'description' in event_js:
         event.description = event_js['description']
+    if 'seed' in event_js:
+        event.seed = seed_to_string(event_js['seed'])
     event.stageId = stageid
     session.commit()
     return event
@@ -388,12 +394,21 @@ def to_dict(model):
         o['users'] = []
         for role in model.eventRoles:
             o['users'].append(to_dict(role))
+        
+    if 'seed' in o:
+        o['seed'] = seed_to_list(o['seed'])
 
     for key in o:
         if o[key] is None:
             o[key] = ''
     return o
 
+
+def seed_to_list(seed):
+    return [int(x) for x in seed.split(',')]
+
+def seed_to_string(seed):
+    return ','.join(str(e) for e in seed)
 
 
 def main():
