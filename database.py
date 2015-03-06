@@ -51,6 +51,7 @@ class Competition(Base):
     public = Column(Integer)
     results = Column(String)
     state = Column(String)
+    seed = Column(String)
 
 class CompetitionRole(Base):
     __tablename__ = 'CompetitionRole'
@@ -75,6 +76,7 @@ class Stage(Base):
     name = Column(String)
     state = Column(String)
     compId = Column(Integer, ForeignKey('Competition.competitionId'))
+    seed = Column(String)
 
     nextStage = relationship("Stage", uselist=False, foreign_keys=[previousStageId])
     previousStage = relationship("Stage", uselist=False, foreign_keys=[nextStageId])
