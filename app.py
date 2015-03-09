@@ -167,11 +167,12 @@ def authenticate():
         user = db.get_user_by_username(user_req['userName'], session)
         if user is not None:
             user = db.to_dict(user)
+            if user['userName'] == user_req['userName'] and user['password'] == user_req['password']:
+                token = generateToken()
+                sessions[token] = user['userId']
+                session.close()
+                return jsonify({"userId":user['userId'], 'token':token}), 200
         session.close()
-        if user['userName'] == user_req['userName'] and user['password'] == user_req['password']:
-            token = generateToken()
-            sessions[token] = user['userId']
-            return jsonify({"userId":user['userId'], 'token':token}), 200
         return jsonify({'status': 'AuthFailure', 'msg':'Authentication failed.'}),400
     elif request.method == 'DELETE':
         token = request.headers.get('X-Token')
