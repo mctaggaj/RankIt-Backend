@@ -169,6 +169,30 @@ def store_competition(comp_js, creator_id, session):
     session.commit()
     return comp
 
+def edit_competition(comp_js, compid, session):
+    comp = get_competition_by_compid(compid, session)
+    if comp is None:
+        return None
+    if 'name' in comp_js:
+        comp.name = comp_js['name']
+    if 'state' in comp_js:
+        comp.state = comp_js['state']
+    if 'public' in comp_js:
+        comp.public = comp_js['public']
+    if 'location' in comp_js:
+        comp.location = comp_js['location']
+    if 'description' in comp_js:
+        comp.description = comp_js['description']
+    if 'streamUrl' in comp_js:
+        comp.streamUrl = comp_js['streamUrl']
+    if 'subject' in comp_js:
+        comp.subject = comp_js['subject']
+    if 'seed' in comp_js:
+        comp.seed = seed_to_string(comp_js['seed'])
+    session.add(comp)    
+    session.commit()
+    return comp
+
 def store_stage(stage_js, compid, session):
     if 'name' not in stage_js or 'state' not in stage_js:
         return None
@@ -406,10 +430,17 @@ def to_dict(model):
 
 
 def seed_to_list(seed):
-    return [int(x) for x in seed.split(',')]
+    if seed is not None:
+        try:
+            return [int(x) for x in seed.split(',')]
+        except ValueError:
+            return [x for x in seed.split(',')]
+    return []
 
 def seed_to_string(seed):
-    return ','.join(str(e) for e in seed)
+    if seed is not None:
+        return ','.join(str(e) for e in seed)
+    return ""
 
 
 def main():

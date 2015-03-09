@@ -45,7 +45,16 @@ def events(competition_id, stage_id):
 @app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
 def competition(competition_id):
     if request.method == 'PUT':
-        return "Not yet implemented", 501
+        comp_dic = request.json
+        session = db.Session()
+        edited_comp = db.edit_competition(comp_dic, competition_id, session)
+        if edited_comp is not None:
+            edited_dic = db.to_dict(edited_comp)
+            session.close()
+            return jsonify(edited_dic)
+        session.close()
+        return jsonify({'status': 'NoCompetition', 'msg':'Competition ID was not found'}), 404
+
     elif request.method == 'GET':
         session = db.Session()
         comp = db.get_competition_by_compid(competition_id, session)
