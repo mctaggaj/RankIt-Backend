@@ -396,7 +396,8 @@ def to_dict(model):
             o['users'].append(to_dict(role))
         
     if 'seed' in o:
-        o['seed'] = seed_to_list(o['seed'])
+        if o['seed'] is not None:
+            o['seed'] = seed_to_list(o['seed'])
 
     for key in o:
         if o[key] is None:
