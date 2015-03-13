@@ -233,8 +233,11 @@ def store_event(event_js, stageid, session):
 #### Database Retrieval Functions ####
 ######################################
 
-def get_all_competitions(session):
+def get_all_competitions(session, userid):
     comps = session.query(Competition).filter(Competition.public == 1).all()
+    if userid is not None:
+        comps_private = session.query(Competition).filter(Competition.public == 0, Competition.compRoles.any(CompetitionRole.userId == userid)).all()
+        return comps + comps_private
     return comps
 
 def get_competition_by_compid(compid, session):

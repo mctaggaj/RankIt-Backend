@@ -14,6 +14,11 @@ app = Flask(__name__, static_url_path="", static_folder="package")
 def generateToken():
     return uuid.uuid4().hex
 
+def get_userid(token):
+    try:
+        return sessions[token]
+    except KeyError:
+        return None
 
 @app.route('/')
 def index():
@@ -117,8 +122,10 @@ def single_stage(stage_id):
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
     if request.method == 'GET':
+        token = request.headers.get('X-Token')
+        userid = get_userid(token)
         session = db.Session()
-        comps = db.get_all_competitions(session)
+        comps = db.get_all_competitions(session, userid)
         comps_dict = []
         for comp in comps:
             comps_dict.append(db.to_dict(comp))
@@ -131,10 +138,11 @@ def all_competitions():
         if 'name' not in new_comp:
             return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'}), 400
         token = request.headers.get('X-Token')
-        if token not in sessions:
+        userid = get_userid(token)
+        if userid == None:
             return jsonify({'msg':'Authentication is not valid'})
         session = db.Session()
-        comp = db.store_competition(new_comp, sessions[token], session)
+        comp = db.store_competition(new_comp, userid, session)
         if comp is not None:
             comp_dict = db.to_dict(comp)
         else:
