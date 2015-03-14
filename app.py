@@ -33,6 +33,7 @@ def check_loggedin(token):
 def index():
     return app.send_static_file('index.html')
 
+#TODO: Auth check
 @app.route('/api/competitions/<competition_id>/stages/<stage_id>/events', methods=['GET', 'POST'])
 def events(competition_id, stage_id):
     if request.method == 'GET':
@@ -56,6 +57,7 @@ def events(competition_id, stage_id):
         return jsonify({'msg':'Competition or stage ID not found'}), 404
 
 
+#TODO: Auth check for put
 @app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
 def competition(competition_id):
     if request.method == 'PUT':
@@ -84,6 +86,7 @@ def competition(competition_id):
         session.close()
         return jsonify(comp_dict)
     
+#TODO: Auth check
 @app.route('/api/events/<event_id>', methods=['GET', 'PUT'])
 def event(event_id):
     if request.method == 'PUT':
@@ -106,6 +109,7 @@ def event(event_id):
         session.close()
         return jsonify(event_dict)
 
+#TODO: Auth check
 @app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
 def stages(competition_id):
     if request.method == 'GET':
@@ -128,6 +132,7 @@ def stages(competition_id):
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 
+#TODO: Auth check
 @app.route('/api/stages/<stage_id>', methods=['GET', 'PUT'])
 def single_stage(stage_id):
     if request.method == 'PUT':
