@@ -350,51 +350,40 @@ def get_user_by_username(username, session):
 #### Authentication Retrieval Functions ####
 ############################################
 
-def get_competition_auth(compid, userid):
-    session = Session()
+def get_competition_auth(compid, userid, session):
     try:
-        role = session.query(CompetitionRole).filter(CompetitionRole.userId== userid, 
+        print "Compid: " + str(compid) + " userid: " + str(userid)
+        role = session.query(CompetitionRole).filter(CompetitionRole.userId == userid, 
                 CompetitionRole.compId == compid).one()
+        return role
     except MultipleResultsFound, e:
         print e
         return None
     except NoResultFound, e:
         print e
         return None
-    finally:
-        session.close()
 
-    return to_dict(role)
-
-def get_stage_auth(stageid, userid):
-    session = Session()
+def get_stage_auth(stageid, userid, session):
     try:
-        role = session.query(StageRole).filter(StageRole.userId == userid, StageRole.compid == compid).one()
+        role = session.query(StageRole).filter(StageRole.userId == userid, StageRole.stageId==stageid).one()
+        return role
     except MultipleResultsFound, e:
         print e
         return None
     except NoResultFound, e:
         print e
         return None
-    finally:
-        session.close()
 
-    return to_dict(role)
-
-def get_event_auth(stageid, userid):
-    session = Session()
+def get_event_auth(eventid, userid, session):
     try:
-        role = session.query(EventRole).filter(EventRole.userId == userid, EventRole.compid == compid).one()
+        role = session.query(EventRole).filter(EventRole.userId == userid, EventRole.eventId == eventid).one()
+        return role
     except MultipleResultsFound, e:
         print e
         return None
     except NoResultFound, e:
         print e
         return None
-    finally:
-        session.close()
-
-    return to_dict(role)
 
 
 ########################################
@@ -402,27 +391,18 @@ def get_event_auth(stageid, userid):
 ########################################
 
 def check_admin(role):
-    try:
-        if role['admin'] == 1:
-            return True
-    except KeyError, e:
-        pass
+    if role.permission.admin == 1:
+        return True
     return False
 
 def check_judge(role):
-    try:
-        if role['judge'] == 1:
-            return True
-    except KeyError, e:
-        pass
+    if role.permission.judge == 1:
+        return True
     return False
 
 def check_competitor(role):
-    try:
-        if role['competitor'] == 1:
-            return True
-    except KeyError, e:
-        pass
+    if role.permission.competitor == 1:
+        return True
     return False
 
             

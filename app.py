@@ -5,7 +5,12 @@ import json
 import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+
 import database as db
+import authentication as auth
+from authentication import AuthType
+from authentication import AuthLevel
+
 
 sessions = {}
 
@@ -66,7 +71,12 @@ def competition(competition_id):
 
     elif request.method == 'GET':
         session = db.Session()
+        token = request.headers.get('X-Token')
+        userid = get_userid(token)
+        visible = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.membership)
         comp = db.get_competition_by_compid(competition_id, session)
+        if comp.public == False and visible == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
         if comp is None:
             session.close()
             return jsonify({'status': 'NoCompetition', 'msg': 'Competition ID was not found.'}), 404
