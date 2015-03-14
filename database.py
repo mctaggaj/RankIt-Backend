@@ -10,6 +10,8 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import json
 
+from authentication import AuthType, AuthLevel
+
 engine = create_engine('mysql://compuser:smellslikesoup@131.104.49.60/comp', echo=True)
 Session = sessionmaker(bind=engine)
 
@@ -345,6 +347,36 @@ def get_user_by_username(username, session):
         print e
         return None
 
+def get_parent_of_obj(thing_id, otype, session):
+    if otype == AuthType.competition:
+        return None
+
+    elif otype == AuthType.stage:
+        try:
+            obj = get_stage_by_stageid(thing_id, session)
+            if obj == None:
+                return None
+            return session.query(Competition).filter(Competition.competitionId == obj.compId).one()
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
+
+    elif otype == AuthType.event:
+        try:
+            obj = get_event_by_eventid(thing_id, session)
+            if obj == None:
+                return None
+            return session.query(Stage).filter(Stage.stageId == obj.stageId).one()
+        except MultipleResultsFound, e:
+            print e
+            return None
+        except NoResultFound, e:
+            print e
+            return None
+
 
 ############################################
 #### Authentication Retrieval Functions ####
@@ -352,7 +384,6 @@ def get_user_by_username(username, session):
 
 def get_competition_auth(compid, userid, session):
     try:
-        print "Compid: " + str(compid) + " userid: " + str(userid)
         role = session.query(CompetitionRole).filter(CompetitionRole.userId == userid, 
                 CompetitionRole.compId == compid).one()
         return role
@@ -391,16 +422,22 @@ def get_event_auth(eventid, userid, session):
 ########################################
 
 def check_admin(role):
+    if role == None:
+        return False
     if role.permission.admin == 1:
         return True
     return False
 
 def check_judge(role):
+    if role == None:
+        return False
     if role.permission.judge == 1:
         return True
     return False
 
 def check_competitor(role):
+    if role == None:
+        return False
     if role.permission.competitor == 1:
         return True
     return False

@@ -34,10 +34,15 @@ def index():
     return app.send_static_file('index.html')
 
 #TODO: Auth check
-@app.route('/api/competitions/<competition_id>/stages/<stage_id>/events', methods=['GET', 'POST'])
-def events(competition_id, stage_id):
+@app.route('/api/stages/<stage_id>/events', methods=['GET', 'POST'])
+def events(stage_id):
     if request.method == 'GET':
         session = db.Session()
+        userid = get_userid(request.headers.get('X-Token'))
+        comp = db.get_parent_of_obj(stage_id, AuthType.stage, session)
+        visible = auth.check_auth(userid, comp.competitionId, AuthType.competition, AuthLevel.membership)
+        if visible == False and comp.public == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
         events = db.get_all_events_by_stageid(stage_id, session)
         events_dicts = []
         for event in events:
@@ -46,6 +51,10 @@ def events(competition_id, stage_id):
         return jsonify({'events':events_dicts})
     elif request.method == 'POST':
         new_event = request.json
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, stage_id, AuthType.stage, AuthLevel.admin)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to create this object.'}), 404
         if 'eventId' in new_event:
             return jsonify({'status':'InvalidField', 'msg':'Event Id cannot be provided in new stage.'}),400
         session = db.Session()
@@ -210,7 +219,7 @@ def users_response():
 @app.route('/api/users/<user_id>')
 def get_user(user_id):
     session = db.Session()
-    user = db.get_user_by_userid(user_id)
+    user = db.get_user_by_userid(user_id, session)
     if user is not None:
         user_dict = db.to_dict(user)
         session.close()
