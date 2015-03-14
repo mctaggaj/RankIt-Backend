@@ -57,11 +57,14 @@ def events(competition_id, stage_id):
         return jsonify({'msg':'Competition or stage ID not found'}), 404
 
 
-#TODO: Auth check for put
 @app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
 def competition(competition_id):
     if request.method == 'PUT':
         comp_dic = request.json
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.admin)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
         session = db.Session()
         edited_comp = db.edit_competition(comp_dic, competition_id, session)
         if edited_comp is not None:

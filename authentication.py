@@ -41,5 +41,6 @@ def check_auth(userid, thing_id, auth_type, auth_level):
         session.close()
         return True
 
+    value = permission_check(role)
     session.close()
-    return permission_check(role)
+    return value
