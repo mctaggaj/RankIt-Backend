@@ -20,6 +20,10 @@ def get_userid(token):
     except KeyError:
         return None
 
+def check_loggedin(token):
+    return (True if token in sessions else False)
+    
+
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -73,7 +77,15 @@ def competition(competition_id):
 @app.route('/api/events/<event_id>', methods=['GET', 'PUT'])
 def event(event_id):
     if request.method == 'PUT':
-        return "Not yet implemented", 501
+        session = db.Session()
+        edited_dic = request.json
+        edited_event = db.edit_event(edited_dic, event_id, session)
+        if edited_event == None:
+            session.close()
+            return jsonify({'status': 'NoCompetition', 'msg': 'Event ID was not found.'}), 404
+        edited_event_dic = db.to_dict(edited_event)
+        session.close()
+        return jsonify(edited_event_dic)
     elif request.method == 'GET':
         session = db.Session()
         event = db.get_event_by_eventid(event_id, session)
@@ -100,12 +112,25 @@ def stages(competition_id):
             return jsonify({'status':'InvalidField', 'msg':'Stage ID cannot be provided in new stage.'}),400
         session = db.Session()
         new_stage = db.store_stage(new_stage, competition_id, session)
-        return jsonify(db.to_dict(new_stage)), 201
+        new_stage_dict = db.to_dict(new_stage)
+        session.close()
+        return jsonify(new_stage_dict), 201
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 
 @app.route('/api/stages/<stage_id>', methods=['GET', 'PUT'])
 def single_stage(stage_id):
+    if request.method == 'PUT':
+        session = db.Session()
+        edited_dic = request.json
+        edited_stage = db.edit_stage(edited_dic, stage_id, session)
+        if edited_stage == None:
+            session.close()
+            return jsonify({'status': 'NoStage', 'msg':'Stage ID was not found.'}), 404
+        edited_stage_dic = db.to_dict(edited_stage)
+        session.close()
+        return jsonify(edited_stage_dic)
+
     if request.method == 'GET':
         session = db.Session()
         stage = db.get_stage_by_stageid(stage_id, session)
@@ -138,9 +163,9 @@ def all_competitions():
         if 'name' not in new_comp:
             return jsonify({'status':'MissingField', 'msg':'A name must be provided in competition.'}), 400
         token = request.headers.get('X-Token')
-        userid = get_userid(token)
-        if userid == None:
+        if check_loggedin(token) == False:
             return jsonify({'msg':'Authentication is not valid'})
+        userid = get_userid(token)
         session = db.Session()
         comp = db.store_competition(new_comp, userid, session)
         if comp is not None:

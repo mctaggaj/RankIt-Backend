@@ -213,6 +213,24 @@ def store_stage(stage_js, compid, session):
     session.commit()
     return stage
 
+def edit_stage(stage_js, stageid, session):
+    stage = get_stage_by_stageid(stageid, session)
+    if stage is None:
+        return None
+    if 'name' in stage_js:
+        stage.name = stage_js['name']
+    if 'state' in stage_js:
+        stage.state = stage_js['state']
+    if 'location' in stage_js:
+        stage.location = stage_js['location']
+    if 'description' in stage_js:
+        stage.description = stage_js['description']
+    if 'seed' in stage_js:
+        stage.seed = seed_to_string(stage_js['seed'])
+    session.add(stage)
+    session.commit()
+    return stage
+
 def store_event(event_js, stageid, session):
     if 'name' not in event_js or 'state' not in event_js:
         return None
@@ -227,6 +245,25 @@ def store_event(event_js, stageid, session):
     event.stageId = stageid
     session.commit()
     return event
+
+def edit_event(event_js, eventid, session):
+    event = get_event_by_eventid(eventid, session)
+    if event is None:
+        return None
+    if 'name' in event_js:
+        event.name = event_js['name']
+    if 'state' in event_js:
+        event.state = event_js['state']
+    if 'location' in event_js:
+        event.location = event_js['location']
+    if 'description' in event_js:
+        event.description = event_js['description']
+    if 'seed' in event_js:
+        event.seed = seed_to_string(event_js['seed'])
+    session.add(event)
+    session.commit()
+    return event
+
 
 
 ######################################
