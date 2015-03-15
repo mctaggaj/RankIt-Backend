@@ -20,11 +20,12 @@ def check_auth(userid, thing_id, auth_type, auth_level):
     stage_value = False
     if auth_type == AuthType.competition:
         auth_retrieval = db.get_competition_auth
+        comp = db.get_competition_by_compid(thing_id, session)
+        if comp.public == True and auth_level == AuthLevel.membership:
+            return True
     elif auth_type == AuthType.stage:
         auth_retrieval = db.get_stage_auth
         comp = db.get_parent_of_obj(thing_id, AuthType.stage, session)
-        if comp.public == True and auth_level == AuthLevel.membership:
-            return True
         comp_value = check_auth(userid, comp.competitionId, AuthType.competition, auth_level)
     elif auth_type == AuthType.event:
         auth_retrieval = db.get_event_auth

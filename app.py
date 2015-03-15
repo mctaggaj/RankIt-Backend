@@ -129,10 +129,13 @@ def event(event_id):
         session.close()
         return jsonify(event_dict)
 
-#TODO: Auth check
 @app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
 def stages(competition_id):
     if request.method == 'GET':
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.membership)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
         session = db.Session()
         stages = db.get_all_stages_by_compid(competition_id, session)
         stages_dicts = []
@@ -141,6 +144,10 @@ def stages(competition_id):
         session.close()
         return jsonify({'stages':stages_dicts})
     elif request.method == 'POST':
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.admin)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
         new_stage = request.json
         if 'stageId' in new_stage:
             return jsonify({'status':'InvalidField', 'msg':'Stage ID cannot be provided in new stage.'}),400
