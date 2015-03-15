@@ -442,6 +442,10 @@ def check_competitor(role):
         return True
     return False
 
+def check_membership(role):
+    if role == None:
+        return False
+    return True
             
 
 ################################

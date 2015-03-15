@@ -23,6 +23,8 @@ def check_auth(userid, thing_id, auth_type, auth_level):
     elif auth_type == AuthType.stage:
         auth_retrieval = db.get_stage_auth
         comp = db.get_parent_of_obj(thing_id, AuthType.stage, session)
+        if comp.public == True and auth_level == AuthLevel.membership:
+            return True
         comp_value = check_auth(userid, comp.competitionId, AuthType.competition, auth_level)
     elif auth_type == AuthType.event:
         auth_retrieval = db.get_event_auth
@@ -37,10 +39,8 @@ def check_auth(userid, thing_id, auth_type, auth_level):
         permission_check = db.check_judge
     elif auth_level == AuthLevel.admin:
         permission_check = db.check_admin
-    #If checking for membership, anyone with a role existing is a member
     elif auth_level == AuthLevel.membership:
-        session.close()
-        return True
+        permission_check = db.check_membership
 
     value = permission_check(role)
     session.close()

@@ -33,7 +33,6 @@ def check_loggedin(token):
 def index():
     return app.send_static_file('index.html')
 
-#TODO: Auth check
 @app.route('/api/stages/<stage_id>/events', methods=['GET', 'POST'])
 def events(stage_id):
     if request.method == 'GET':
@@ -42,6 +41,7 @@ def events(stage_id):
         comp = db.get_parent_of_obj(stage_id, AuthType.stage, session)
         visible = auth.check_auth(userid, comp.competitionId, AuthType.competition, AuthLevel.membership)
         if visible == False and comp.public == False:
+            session.close()
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
         events = db.get_all_events_by_stageid(stage_id, session)
         events_dicts = []
@@ -90,6 +90,7 @@ def competition(competition_id):
         visible = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.membership)
         comp = db.get_competition_by_compid(competition_id, session)
         if comp.public == False and visible == False:
+            session.close()
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
         if comp is None:
             session.close()
@@ -98,10 +99,13 @@ def competition(competition_id):
         session.close()
         return jsonify(comp_dict)
     
-#TODO: Auth check
 @app.route('/api/events/<event_id>', methods=['GET', 'PUT'])
 def event(event_id):
     if request.method == 'PUT':
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, event_id, AuthType.event, AuthLevel.admin)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
         session = db.Session()
         edited_dic = request.json
         edited_event = db.edit_event(edited_dic, event_id, session)
@@ -112,6 +116,10 @@ def event(event_id):
         session.close()
         return jsonify(edited_event_dic)
     elif request.method == 'GET':
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, event_id, AuthType.event, AuthLevel.membership)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
         session = db.Session()
         event = db.get_event_by_eventid(event_id, session)
         if event is None:
