@@ -159,10 +159,13 @@ def stages(competition_id):
 
     return jsonify({'status':'NoCompetition', 'msg':'Competition ID was not found.'}), 404
 
-#TODO: Auth check
 @app.route('/api/stages/<stage_id>', methods=['GET', 'PUT'])
 def single_stage(stage_id):
     if request.method == 'PUT':
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, stage_id, AuthType.stage, AuthLevel.admin)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
         session = db.Session()
         edited_dic = request.json
         edited_stage = db.edit_stage(edited_dic, stage_id, session)
@@ -174,6 +177,10 @@ def single_stage(stage_id):
         return jsonify(edited_stage_dic)
 
     if request.method == 'GET':
+        userid = get_userid(request.headers.get('X-Token'))
+        allowed = auth.check_auth(userid, stage_id, AuthType.stage, AuthLevel.membership)
+        if allowed == False:
+            return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
         session = db.Session()
         stage = db.get_stage_by_stageid(stage_id, session)
         if stage is None:
@@ -183,8 +190,6 @@ def single_stage(stage_id):
         session.close()
         return jsonify(stage_dict)
 
-    else:
-        return "Not yet implemented", 501
 
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
