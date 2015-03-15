@@ -35,9 +35,9 @@ def index():
 
 @app.route('/api/stages/<stage_id>/events', methods=['GET', 'POST'])
 def events(stage_id):
+    userid = get_userid(request.headers.get('X-Token'))
     if request.method == 'GET':
         session = db.Session()
-        userid = get_userid(request.headers.get('X-Token'))
         comp = db.get_parent_of_obj(stage_id, AuthType.stage, session)
         visible = auth.check_auth(userid, comp.competitionId, AuthType.competition, AuthLevel.membership)
         if visible == False and comp.public == False:
@@ -51,7 +51,6 @@ def events(stage_id):
         return jsonify({'events':events_dicts})
     elif request.method == 'POST':
         new_event = request.json
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, stage_id, AuthType.stage, AuthLevel.admin)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to create this object.'}), 404
@@ -68,12 +67,12 @@ def events(stage_id):
 
 @app.route('/api/competitions/<competition_id>', methods=['GET', 'PUT'])
 def competition(competition_id):
+    userid = get_userid(request.headers.get('X-Token'))
     if request.method == 'PUT':
-        comp_dic = request.json
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.admin)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
+        comp_dic = request.json
         session = db.Session()
         edited_comp = db.edit_competition(comp_dic, competition_id, session)
         if edited_comp is not None:
@@ -85,8 +84,6 @@ def competition(competition_id):
 
     elif request.method == 'GET':
         session = db.Session()
-        token = request.headers.get('X-Token')
-        userid = get_userid(token)
         visible = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.membership)
         comp = db.get_competition_by_compid(competition_id, session)
         if comp.public == False and visible == False:
@@ -101,8 +98,8 @@ def competition(competition_id):
     
 @app.route('/api/events/<event_id>', methods=['GET', 'PUT'])
 def event(event_id):
+    userid = get_userid(request.headers.get('X-Token'))
     if request.method == 'PUT':
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, event_id, AuthType.event, AuthLevel.admin)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
@@ -116,7 +113,6 @@ def event(event_id):
         session.close()
         return jsonify(edited_event_dic)
     elif request.method == 'GET':
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, event_id, AuthType.event, AuthLevel.membership)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
@@ -131,8 +127,8 @@ def event(event_id):
 
 @app.route('/api/competitions/<competition_id>/stages', methods=['GET', 'POST'])
 def stages(competition_id):
+    userid = get_userid(request.headers.get('X-Token'))
     if request.method == 'GET':
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.membership)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
@@ -144,7 +140,6 @@ def stages(competition_id):
         session.close()
         return jsonify({'stages':stages_dicts})
     elif request.method == 'POST':
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.admin)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
@@ -161,8 +156,8 @@ def stages(competition_id):
 
 @app.route('/api/stages/<stage_id>', methods=['GET', 'PUT'])
 def single_stage(stage_id):
+    userid = get_userid(request.headers.get('X-Token'))
     if request.method == 'PUT':
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, stage_id, AuthType.stage, AuthLevel.admin)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
@@ -177,7 +172,6 @@ def single_stage(stage_id):
         return jsonify(edited_stage_dic)
 
     if request.method == 'GET':
-        userid = get_userid(request.headers.get('X-Token'))
         allowed = auth.check_auth(userid, stage_id, AuthType.stage, AuthLevel.membership)
         if allowed == False:
             return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to view this object.'}), 404
@@ -194,8 +188,7 @@ def single_stage(stage_id):
 @app.route('/api/competitions', methods=['GET', 'POST'])
 def all_competitions():
     if request.method == 'GET':
-        token = request.headers.get('X-Token')
-        userid = get_userid(token)
+        userid = get_userid(request.headers.get('X-Token'))
         session = db.Session()
         comps = db.get_all_competitions(session, userid)
         comps_dict = []
