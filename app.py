@@ -204,6 +204,7 @@ def get_stage(stage_id):
     session.close()
     return jsonify(stage_dict)
 
+
 @app.route('/api/competitions', methods=['GET'])
 def get_competitions():
     userid = get_userid(request.headers.get('X-Token'))
@@ -238,8 +239,9 @@ def create_competition():
     session.close()
     return jsonify(comp_dict),201
 
+
 @app.route('/api/users', methods=['POST'])
-def users_response():
+def create_user():
     session = db.Session()
     u = db.store_user(request.json, session)
     if u is not None:
@@ -248,6 +250,7 @@ def users_response():
         return jsonify({'status':'UserExists', 'msg':'Username already exists in database'})
     session.close()
     return jsonify(user), 201
+
 
 @app.route('/api/users/<user_id>')
 def get_user(user_id):
@@ -260,6 +263,7 @@ def get_user(user_id):
     else:
         session.close()
         return jsonify({'msg':'User was not found'})
+
 
 @app.route('/api/authentication', methods=['POST'])
 def authenticate():
@@ -283,6 +287,7 @@ def deauthenticate():
     if token in sessions:
         del sessions[token]
     return jsonify({'msg':'Deauthenticated'}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
