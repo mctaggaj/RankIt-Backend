@@ -266,6 +266,26 @@ def edit_event(event_js, eventid, session):
     session.commit()
     return event
 
+def add_user_to_competition(js, session):
+    if js == None:
+        return None
+    if 'userId' not in js or 'competitionId' not in js:
+        return None
+    perms = Permission()
+    session.add(perms)
+
+    try:
+        perms.admin = js['admin']
+        perms.judge = js['judge']
+        perms.competitor = js['competitor']
+    except KeyError:
+        pass
+
+    role = CompetitionRole(userId = js['userId'], compId = js['competitionId'])
+    session.add(role)
+    role.permission = perms
+    session.commit()
+    return role
 
 
 ######################################

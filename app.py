@@ -33,6 +33,23 @@ def check_loggedin(token):
 def index():
     return app.send_static_file('index.html')
 
+@app.route('/api/competitions/<competition_id>/users', methods=['POST'])
+def add_user(competition_id):
+    userid = get_userid(request.headers.get('X-Token'))
+    allowed = auth.check_auth(userid, competition_id, AuthType.competition, AuthLevel.admin)
+    if allowed == False:
+        return jsonify({'status': 'InvalidPermissions', 'msg':'No permissions to edit this object.'}), 404
+    session = db.Session()
+    new_user = db.add_user_to_competition(request.json, session)
+    if new_user == None:
+        session.close()
+        return jsonify({'status': 'Failed to add user'})
+    new_user_dict = db.to_dict(new_user)
+    session.close()
+    return jsonify(new_user_dict)
+
+    
+
 @app.route('/api/stages/<stage_id>/events', methods=['GET'])
 def get_events(stage_id):
     userid = get_userid(request.headers.get('X-Token'))
