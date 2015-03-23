@@ -171,6 +171,30 @@ def store_competition(comp_js, creator_id, session):
     session.commit()
     return comp
 
+def build_competition(comp_js, creator_id, session):
+    comp = store_competition(comp_js, creator_id, session)
+
+    if comp == None:
+        return None
+
+    for stage in comp_js['stages']:
+        temp_stage = store_stage(stage, comp.competitionId, session)
+        if temp_stage == None:
+            return None
+        else:
+            session.add(temp_stage)
+            comp.stages.append(temp_stage)
+        for event in stage['events']:
+            temp_event = store_event(event, temp_stage.stageId, session)
+            if temp_event == None:
+                return None
+            else:
+                session.add(temp_event)
+                temp_stage.events.append(temp_event)
+
+    session.commit()
+    return comp
+
 def edit_competition(comp_js, compid, session):
     comp = get_competition_by_compid(compid, session)
     if comp is None:
