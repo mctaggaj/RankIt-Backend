@@ -27,6 +27,13 @@ def get_userid(token):
 
 def check_loggedin(token):
     return (True if token in sessions else False)
+
+def is_number(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
     
 
 @app.route('/')
@@ -267,11 +274,15 @@ def create_user():
 @app.route('/api/users/<user_id>')
 def get_user(user_id):
     session = db.Session()
-    user = db.get_user_by_userid(user_id, session)
+    if is_number(user_id):
+        user = db.get_user_by_userid(user_id, session)
+    else:
+        user = db.get_user_by_username(user_id, session)
+
     if user is not None:
         user_dict = db.to_dict(user)
         session.close()
-        return jsonify(user)
+        return jsonify(user_dict)
     else:
         session.close()
         return jsonify({'msg':'User was not found'})
