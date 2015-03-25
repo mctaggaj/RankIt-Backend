@@ -176,21 +176,29 @@ def build_competition(comp_js, creator_id, session):
 
     if comp == None:
         return None
-
+    prevStage = None;
     for stage in comp_js['stages']:
+        stage['stageId'] = None;
+        stage['nextStage'] = None;
+        stage['previousStage'] = None;
         temp_stage = store_stage(stage, comp.competitionId, session)
         if temp_stage == None:
             return None
         else:
             session.add(temp_stage)
             comp.stages.append(temp_stage)
-        for event in stage['events']:
-            temp_event = store_event(event, temp_stage.stageId, session)
-            if temp_event == None:
-                return None
-            else:
-                session.add(temp_event)
-                temp_stage.events.append(temp_event)
+            if prevStage != None:
+                temp_stage.previousStageId = prevStage.stageId
+                prevStage.nextStageId=temp_stage.stageId
+            prevStage = temp_stage
+            for event in stage['events']:
+                event['eventId'] = None;
+                temp_event = store_event(event, temp_stage.stageId, session)
+                if temp_event == None:
+                    return None
+                else:
+                    session.add(temp_event)
+                    temp_stage.events.append(temp_event)
 
     session.commit()
     return comp
@@ -215,7 +223,7 @@ def edit_competition(comp_js, compid, session):
         comp.subject = comp_js['subject']
     if 'seed' in comp_js:
         comp.seed = seed_to_string(comp_js['seed'])
-    session.add(comp)    
+    session.add(comp)
     session.commit()
     return comp
 
@@ -428,7 +436,7 @@ def get_parent_of_obj(thing_id, otype, session):
 
 def get_competition_auth(compid, userid, session):
     try:
-        role = session.query(CompetitionRole).filter(CompetitionRole.userId == userid, 
+        role = session.query(CompetitionRole).filter(CompetitionRole.userId == userid,
                 CompetitionRole.compId == compid).one()
         return role
     except MultipleResultsFound, e:
@@ -490,7 +498,7 @@ def check_membership(role):
     if role == None:
         return False
     return True
-            
+
 
 ################################
 #### Misc Utility Functions ####
@@ -523,7 +531,7 @@ def to_dict(model):
         o['users'] = []
         for role in model.eventRoles:
             o['users'].append(to_dict(role))
-        
+
     if 'seed' in o:
         if o['seed'] is not None:
             o['seed'] = seed_to_list(o['seed'])
