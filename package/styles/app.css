@@ -6300,6 +6300,59 @@ button.close {
   margin-top: 10%;
   max-width: 500px;
 }
+@-webkit-keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, -100%, 0);
+    transform: translate3d(0, -100%, 0);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: none;
+    transform: none;
+  }
+}
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, -100%, 0);
+    -ms-transform: translate3d(0, -100%, 0);
+    transform: translate3d(0, -100%, 0);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: none;
+    -ms-transform: none;
+    transform: none;
+  }
+}
+.fadeInDown {
+  -webkit-animation: fadeInDown 1s;
+  animation: fadeInDown;
+}
+.login-alert {
+  opacity: 1;
+  top: 0;
+  position: relative;
+}
+.login-alert.ng-hide {
+  top: -100px;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  display: block !important;
+}
+.login-alert.ng-hide-add,
+.login-alert.ng-hide-remove {
+  display: block !important;
+  -webkit-transition: all 0.6s;
+  transition: all 0.6s;
+}
+/*.login-form {
+	display: block !important;
+	-webkit-transition: all 0.6s;
+}*/
 /**
  * Styles for the comp-struct directive
  * Author: Jason McTaggart
@@ -6353,6 +6406,7 @@ comp-struct > div.detail .event p {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  white-space: nowrap;
 }
 comp-struct > div.detail .event-container {
   padding-left: 5%;
@@ -6374,27 +6428,25 @@ comp-struct > div.detail .event-container {
 .main-view .top-push {
   margin-top: 1em;
 }
-.ng-enter,
-.ng-leave {
-  -webkit-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
-  -moz-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
-  -ms-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
-  -o-transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
-  transition: 400ms cubic-bezier(0.25, 0.25, 0.75, 0.75) all;
+.comp-row {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  -webkit-transition: all 500ms cubic-bezier(0.85, 0.005, 0.07, 1);
+  transition: all 500ms cubic-bezier(0.85, 0.005, 0.07, 1);
+}
+.comp-row.ng-enter.ng-enter-active,
+.comp-row.ng-leave {
+  left: 0;
+  height: 132px;
   position: relative;
   display: block;
 }
-.ng-enter.ng-enter-active,
-.ng-leave {
-  opacity: 1;
-  top: 0;
-  height: 30px;
-}
-.ng-leave.ng-leave-active,
-.ng-enter {
-  opacity: 0;
-  top: -50px;
+.comp-row.ng-leave.ng-leave-active,
+.comp-row.ng-enter {
+  left: -200%;
   height: 0px;
+  display: block;
 }
 body {
   background-image: url("../assets/images/bg.jpg");
